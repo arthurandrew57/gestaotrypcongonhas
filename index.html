@@ -3,878 +3,568 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestão Tryp Congonhas | Controle de Unidades</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Gestão Tryp Congonhas</title>
 <style>
   :root{
-    --azul-900:#0f2742;
-    --azul-800:#16375c;
-    --azul-700:#1e4a74;
-    --azul-600:#2a5d8f;
-    --azul-500:#3d74a8;
-    --cinza-50:#f5f7fa;
-    --cinza-100:#eceff3;
-    --cinza-200:#dde3ea;
-    --cinza-400:#9aa5b1;
-    --cinza-600:#5c6773;
-    --texto:#1c2733;
-
-    --disp:#2f9e6e;
-    --disp-bg:#e5f6ee;
-    --res:#c98a1f;
-    --res-bg:#fbf0dd;
-    --vend:#b84242;
-    --vend-bg:#fbe8e8;
-    --ec:#3d74a8;
-    --ec-bg:#e6eef5;
-    --dif-border:#c9a227;
-
-    --sign-ok:#2f9e6e;
-    --sign-pend:#c98a1f;
-    --sign-no:#9aa5b1;
-
-    --bloqueado:#4a5568;
-    --bloqueado-bg:#e2e8f0;
+    --azul-escuro:#1f3a5f;
+    --azul-medio:#3a6ea5;
+    --azul-claro:#eaf1f8;
+    --azul-borda:#c7d7e8;
+    --cinza-texto:#4a4a4a;
+    --verde:#2e7d32;
+    --laranja:#ef6c00;
+    --vermelho:#c62828;
+    --roxo:#6a1b9a;
+    --cinza-bloq:#757575;
+    --dourado:#c99b2e;
   }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:var(--cinza-texto);}
+  header{background:var(--azul-escuro);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  header h1{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;}
+  header button{background:var(--azul-medio);color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px;}
+  header button:hover{background:#2f5a85;}
+  #status-conexao{font-size:12px;opacity:.85;}
 
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  body{
-    font-family:'Inter',Arial,sans-serif;
-    background: var(--cinza-50);
-    color: var(--texto);
-    -webkit-font-smoothing:antialiased;
-  }
+  #overlay-loading{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;font-size:16px;color:var(--azul-escuro);gap:10px;}
+  #overlay-loading.hidden{display:none;}
+  .spinner{width:36px;height:36px;border:4px solid var(--azul-claro);border-top-color:var(--azul-medio);border-radius:50%;animation:girar 1s linear infinite;}
+  @keyframes girar{to{transform:rotate(360deg);}}
 
-  /* ===== HEADER ===== */
-  header{
-    background: linear-gradient(120deg, var(--azul-900), var(--azul-700));
-    color:#fff;
-    padding: 22px 36px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.15);
-  }
-  .brand{ display:flex; align-items:center; gap:14px; }
-  .brand-icon{
-    width:46px; height:46px;
-    background: rgba(255,255,255,.12);
-    border:1px solid rgba(255,255,255,.25);
-    border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:20px;
-  }
-  .brand h1{ font-size:19px; font-weight:700; letter-spacing:.3px; }
-  .brand span{ font-size:12px; color:#cfdcea; font-weight:400; }
+  #dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:18px 24px;}
+  .card{background:#fff;border:1px solid var(--azul-borda);border-radius:8px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .card .num{font-size:22px;font-weight:700;color:var(--azul-escuro);}
+  .card .lbl{font-size:12px;color:#777;margin-top:4px;}
 
-  .header-actions{ display:flex; gap:10px; align-items:center; }
-  .btn-export{
-    background:#fff;
-    color:var(--azul-800);
-    border:none;
-    padding:10px 18px;
-    border-radius:8px;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-    display:flex; align-items:center; gap:8px;
-    transition:.2s;
-  }
-  .btn-export:hover{ background:#dfe8f1; transform:translateY(-1px); }
+  #filtros{background:#fff;margin:0 24px 18px;padding:14px;border-radius:8px;border:1px solid var(--azul-borda);display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
+  #filtros .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;}
+  #filtros input,#filtros select{padding:8px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;min-width:140px;}
+  #filtros button{padding:8px 14px;border:none;background:var(--azul-medio);color:#fff;border-radius:6px;cursor:pointer;height:36px;}
+  #contador-resultados{font-size:13px;color:#555;margin-left:auto;align-self:center;}
 
-  .updated-at{ font-size:11px; color:#aebfd2; }
+  #legenda{display:flex;gap:16px;flex-wrap:wrap;padding:0 24px 18px;font-size:12px;color:#555;}
+  #legenda span{display:flex;align-items:center;gap:6px;}
+  .dot{width:12px;height:12px;border-radius:3px;display:inline-block;}
 
-  /* ===== DASHBOARD ===== */
-  .dashboard{
-    display:grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap:14px;
-    padding: 22px 36px;
-    background:#fff;
-    border-bottom:1px solid var(--cinza-200);
-  }
-  .card{
-    background: var(--cinza-50);
-    border:1px solid var(--cinza-200);
-    border-radius:12px;
-    padding:16px 18px;
-    position:relative;
-    overflow:hidden;
-  }
-  .card::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; }
-  .card h3{ font-size:24px; font-weight:800; color:var(--azul-900); }
-  .card p{ font-size:11px; color:var(--cinza-600); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; font-weight:600;}
-  .card .pct{ font-size:11px; color:var(--cinza-400); margin-top:2px; }
-  .card .valor-total{ font-size:12px; color:var(--azul-700); font-weight:700; margin-top:4px; }
+  #andares{padding:0 24px 40px;display:flex;flex-direction:column;gap:14px;}
+  .andar-bloco{background:#fff;border:1px solid var(--azul-borda);border-radius:8px;overflow:hidden;}
+  .andar-header{background:var(--azul-claro);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;flex-wrap:wrap;gap:8px;}
+  .andar-header h2{margin:0;font-size:16px;color:var(--azul-escuro);}
+  .andar-stats{font-size:12px;color:#555;display:flex;gap:10px;flex-wrap:wrap;}
+  .andar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;padding:14px;}
+  .andar-grid.collapsed{display:none;}
 
-  .card.total::before{ background:var(--azul-700); }
-  .card.disponivel::before{ background:var(--disp); }
-  .card.reservada::before{ background:var(--res); }
-  .card.vendida::before{ background:var(--vend); }
-  .card.ec::before{ background:var(--ec); }
-  .card.dif::before{ background:var(--dif-border); }
-  .card.assinado::before{ background:var(--sign-ok); }
-  .card.bloqueado::before{ background:var(--bloqueado); }
+  .unit{position:relative;background:#f9fbfd;border:2px solid var(--verde);border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;font-size:11px;transition:.15s;}
+  .unit:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.12);}
+  .unit.disponivel{border-color:var(--verde);}
+  .unit.reservada{border-color:var(--laranja);}
+  .unit.vendida{border-color:var(--vermelho);}
+  .unit.permuta{border-color:var(--roxo);}
+  .unit.bloqueado{background:#ececec;}
+  .unit.diferenciada{box-shadow:inset 0 0 0 2px var(--dourado);}
+  .unit .num{font-weight:700;color:var(--azul-escuro);}
+  .unit .area{color:#777;font-size:10px;}
+  .unit .icones{position:absolute;top:2px;right:3px;font-size:10px;}
+  .unit[hidden]{display:none;}
 
-  /* ===== FILTERS ===== */
-  .filters{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:flex-end;
-    padding: 16px 36px;
-    background:#fff;
-    border-bottom:1px solid var(--cinza-200);
-    position:sticky;
-    top:0;
-    z-index:60;
-  }
-  .filters label.fgroup{ display:flex; flex-direction:column; gap:4px; }
-  .filters label.fgroup span{
-    font-size:10.5px; color:var(--cinza-600); font-weight:600; text-transform:uppercase; letter-spacing:.4px;
-  }
-  .filters select, .filters input{
-    padding:9px 12px;
-    border-radius:8px;
-    border:1px solid var(--cinza-200);
-    font-size:13px;
-    background:var(--cinza-50);
-    color:var(--texto);
-    min-width:150px;
-    font-family:inherit;
-  }
-  .filters input#fBuscaGeral{ min-width:260px; }
-  .filters select:focus, .filters input:focus{ outline:none; border-color:var(--azul-600); background:#fff; }
-  .filters .btn-clear{
-    background:transparent;
-    border:1px solid var(--cinza-200);
-    color:var(--azul-800);
-    padding:9px 16px;
-    border-radius:8px;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.2s;
-  }
-  .filters .btn-clear:hover{ background:var(--cinza-100); }
-  .filters .result-count{
-    font-size:12px; color:var(--cinza-600); margin-left:auto; padding-bottom:9px; font-weight:600;
-  }
-
-  /* ===== LEGEND ===== */
-  .legend{
-    display:flex;
-    gap:22px;
-    padding: 12px 36px;
-    flex-wrap:wrap;
-    font-size:12.5px;
-    background:#fff;
-    border-bottom:1px solid var(--cinza-100);
-    color:var(--cinza-600);
-  }
-  .legend span{ display:flex; align-items:center; gap:7px; font-weight:500; }
-  .dot{ width:13px; height:13px; border-radius:4px; display:inline-block; }
-
-  /* ===== FLOORS ===== */
-  .container{ padding: 24px 36px 70px; }
-
-  .floor-block{
-    margin-bottom: 22px;
-    background:#fff;
-    border-radius:14px;
-    border:1px solid var(--cinza-200);
-    overflow:hidden;
-  }
-  .floor-header{
-    background: var(--azul-900);
-    color:#fff;
-    padding: 13px 20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-    user-select:none;
-  }
-  .floor-header .mini-stats{ display:flex; gap:14px; font-size:11.5px; font-weight:500; flex-wrap:wrap; color:#cdd9e6;}
-  .floor-header .mini-stats b{ color:#fff; font-weight:700; }
-  .floor-header .toggle-icon{ transition: transform .25s; font-size:12px; }
-  .floor-header.collapsed .toggle-icon{ transform: rotate(-90deg); }
-
-  .floor-grid-wrapper{ overflow-x:auto; padding:16px; }
-  .floor-grid-wrapper.hidden{ display:none; }
-
-  .floor-grid{
-    display:grid;
-    grid-template-columns: repeat(30, minmax(70px,1fr));
-    gap:7px;
-    min-width:2150px;
-  }
-
-  .unit{
-    border-radius:9px;
-    padding:8px 5px;
-    text-align:center;
-    cursor:pointer;
-    font-size:12px;
-    position:relative;
-    transition: all .15s ease;
-    border:1.5px solid transparent;
-    background:#fff;
-  }
-  .unit b{ display:block; font-size:13.5px; font-weight:700; }
-  .unit small{ display:block; font-size:10px; margin-top:2px; font-weight:500; }
-  .unit:hover{ transform: translateY(-3px); box-shadow:0 6px 14px rgba(15,39,66,.18); z-index:5; }
-  .unit.dim{ opacity:.15; pointer-events:none; }
-  .unit.bloqueada{ 
-    background:var(--bloqueado-bg); 
-    color:var(--bloqueado); 
-    border-color:var(--cinza-400);
-    cursor:not-allowed;
-  }
-  .unit.bloqueada:hover{ transform:none; box-shadow:none; }
-
-  .status-disponivel{ background:var(--disp-bg); color:var(--disp); border-color:#c7ebd9;}
-  .status-reservada{ background:var(--res-bg); color:var(--res); border-color:#f0dcb2;}
-  .status-vendida{ background:var(--vend-bg); color:var(--vend); border-color:#f3cccc;}
-  .status-ec{ background:var(--ec-bg); color:var(--ec); border-color:#c6dced;}
-
-  .diferenciada{ border-color:var(--dif-border) !important; box-shadow: inset 0 0 0 1px var(--dif-border); }
-  .star{ position:absolute; top:3px; right:5px; font-size:9px; }
-  .lock-icon{ position:absolute; top:3px; left:5px; font-size:9px; }
-
-  .sign-badge{
-    position:absolute; top:3px; right:5px; font-size:9px; font-weight:700;
-  }
-  .sign-badge.ok{ color:var(--sign-ok); }
-  .sign-badge.pend{ color:var(--sign-pend); }
-
-  /* ===== MODAL ===== */
-  .overlay{
-    display:none;
-    position:fixed; inset:0;
-    background:rgba(15,39,66,.55);
-    align-items:center; justify-content:center;
-    z-index:999;
-    backdrop-filter: blur(2px);
-    padding: 20px;
-  }
-  .overlay.active{ display:flex; }
-  .modal{
-    background:#fff;
-    width:480px;
-    max-width:100%;
-    max-height: 92vh;
-    overflow-y:auto;
-    border-radius:16px;
-    padding:26px;
-    box-shadow:0 20px 50px rgba(0,0,0,.25);
-    animation: pop .18s ease;
-  }
-  @keyframes pop{ from{ transform:scale(.95); opacity:0;} to{ transform:scale(1); opacity:1;} }
-
-  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;}
-  .modal h2{ font-size:19px; color:var(--azul-900); font-weight:700; }
-  .modal .close-x{ cursor:pointer; color:var(--cinza-400); font-size:20px; line-height:1;}
-  .modal .close-x:hover{ color:var(--texto); }
-  .modal .area-info{ font-size:12.5px; color:var(--cinza-600); margin-bottom:10px; }
-  .modal .valor-info{ font-size:14px; color:var(--azul-800); font-weight:700; margin-bottom:14px; }
-
-  .modal .section-title{
-    font-size:11px; font-weight:800; color:var(--azul-700); text-transform:uppercase;
-    letter-spacing:.6px; margin-top:18px; padding-top:14px; border-top:1px solid var(--cinza-100);
-  }
-  .modal .section-title:first-of-type{ border-top:none; padding-top:0; margin-top:6px; }
-
-  .modal .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .modal .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-
-  .modal label{ font-size:11.5px; font-weight:700; display:block; margin-top:12px; margin-bottom:5px; color:var(--cinza-600); text-transform:uppercase; letter-spacing:.4px;}
-  .modal select, .modal input, .modal textarea{
-    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--cinza-200); font-size:13.5px; font-family:inherit; background:var(--cinza-50);
-  }
-  .modal select:focus, .modal input:focus, .modal textarea:focus{ outline:none; border-color:var(--azul-600); background:#fff;}
-  .modal textarea{ resize:vertical; min-height:55px; }
-
-  .modal .checkbox-group{
-    display:flex; align-items:center; gap:8px; margin-top:14px; padding:12px;
-    background:var(--cinza-50); border-radius:8px; border:1px solid var(--cinza-200);
-  }
-  .modal .checkbox-group input[type="checkbox"]{ width:18px; height:18px; cursor:pointer; }
-  .modal .checkbox-group label{ margin:0; cursor:pointer; color:var(--texto); font-size:13px; text-transform:none; letter-spacing:0; }
-  .modal .checkbox-group small{ display:block; color:var(--cinza-600); font-size:11px; margin-top:4px; }
-
-  .modal .bloqueada-warning{
-    background:#fed7d7; color:#c53030; padding:10px; border-radius:8px; font-size:12px; margin-top:10px;
-    border-left:4px solid #c53030; display:none;
-  }
-  .modal .bloqueada-warning.active{ display:block; }
-
-  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
-  .modal-actions button{ padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-size:13.5px; font-weight:600; transition:.2s; }
-  .btn-save{ background:var(--azul-800); color:#fff; }
-  .btn-save:hover{ background:var(--azul-900); }
-  .btn-cancel{ background:var(--cinza-100); color:var(--cinza-600); }
-  .btn-cancel:hover{ background:var(--cinza-200); }
-
-  footer{
-    text-align:center; padding:18px; font-size:11.5px; color:var(--cinza-400);
-    background:#fff; border-top:1px solid var(--cinza-200);
-  }
-
-  @media (max-width: 1200px){ .dashboard{ grid-template-columns: repeat(4,1fr); } }
-  @media (max-width: 700px){
-    .dashboard{ grid-template-columns: repeat(2,1fr); }
-    header, .filters, .dashboard, .legend, .container{ padding-left:16px; padding-right:16px; }
-    .modal .row2, .modal .row3{ grid-template-columns:1fr; }
-  }
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+  .modal-overlay.hidden{display:none;}
+  .modal{background:#fff;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;}
+  .modal h2{margin-top:0;color:var(--azul-escuro);font-size:18px;}
+  .modal .linha{margin-bottom:12px;display:flex;flex-direction:column;gap:4px;}
+  .modal label{font-size:12px;font-weight:600;color:#555;}
+  .modal input,.modal select,.modal textarea{padding:9px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;width:100%;}
+  .modal textarea{resize:vertical;min-height:60px;}
+  .aviso-bloqueio{background:#fdecea;border:1px solid var(--vermelho);color:var(--vermelho);padding:8px;border-radius:6px;font-size:12px;margin-bottom:10px;}
+  .oculto{display:none;}
+  .modal-botoes{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+  .modal-botoes button{padding:9px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;}
+  .btn-cancelar{background:#e0e0e0;}
+  .btn-salvar{background:var(--azul-medio);color:#fff;}
+  .fechar-x{position:absolute;top:14px;right:18px;cursor:pointer;font-size:18px;color:#888;}
 </style>
 </head>
 <body>
 
+<div id="overlay-loading">
+  <div class="spinner"></div>
+  <div>Conectando ao banco de dados...</div>
+</div>
+
 <header>
-  <div class="brand">
-    <div class="brand-icon">🏢</div>
-    <div>
-      <h1>Gestão Tryp Congonhas</h1>
-      <span>Painel de Controle de Unidades · 8 pavimentos · 240 unidades</span>
-    </div>
-  </div>
-  <div class="header-actions">
-    <div class="updated-at" id="updatedAt"></div>
-    <button class="btn-export" onclick="exportCSV()">⬇ Exportar relatório (CSV)</button>
+  <h1>🏢 Gestão Tryp Congonhas</h1>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <span id="status-conexao">🔄 Sincronizado</span>
+    <button onclick="exportarCSV()">⬇ Exportar relatório (CSV)</button>
   </div>
 </header>
 
-<div class="dashboard" id="dashboard"></div>
+<div id="dashboard"></div>
 
-<div class="filters">
-  <label class="fgroup">
-    <span>Busca geral</span>
-    <input type="text" id="fBuscaGeral" placeholder="Unidade, comprador, corretor, empresa ou proposta..." oninput="render()">
-  </label>
-
-  <label class="fgroup">
-    <span>Pavimento</span>
-    <select id="fAndar" onchange="render()">
-      <option value="todos">Todos os andares</option>
+<div id="filtros">
+  <div class="campo">
+    <label>Buscar</label>
+    <input type="text" id="f-busca" placeholder="Unidade, comprador, corretor...">
+  </div>
+  <div class="campo">
+    <label>Pavimento</label>
+    <select id="f-andar">
+      <option value="">Todos</option>
     </select>
-  </label>
-
-  <label class="fgroup">
-    <span>Situação</span>
-    <select id="fStatus" onchange="render()">
-      <option value="todos">Todos os status</option>
+  </div>
+  <div class="campo">
+    <label>Situação</label>
+    <select id="f-status">
+      <option value="">Todas</option>
       <option value="disponivel">Disponível</option>
       <option value="reservada">Reservada</option>
       <option value="vendida">Vendida</option>
-      <option value="ec">EC</option>
-      <option value="bloqueado">Bloqueado</option>
+      <option value="permuta">Permuta</option>
+      <option value="bloqueado">Bloqueada</option>
     </select>
-  </label>
-
-  <label class="fgroup">
-    <span>Assinatura</span>
-    <select id="fAssinado" onchange="render()">
-      <option value="todos">Todas</option>
+  </div>
+  <div class="campo">
+    <label>Assinatura</label>
+    <select id="f-assinatura">
+      <option value="">Todas</option>
       <option value="sim">Assinado</option>
       <option value="pendente">Pendente</option>
       <option value="nao">Não assinado</option>
     </select>
-  </label>
-
-  <label class="fgroup">
-    <span>Metragem</span>
-    <select id="fDif" onchange="render()">
-      <option value="todos">Todas as áreas</option>
-      <option value="sim">Somente diferenciadas</option>
-      <option value="nao">Somente padrão</option>
+  </div>
+  <div class="campo">
+    <label>Metragem</label>
+    <select id="f-metragem">
+      <option value="">Todas</option>
+      <option value="diferenciadas">Diferenciadas (≥22m²)</option>
+      <option value="padrao">Padrão</option>
     </select>
-  </label>
-
-  <button class="btn-clear" onclick="limparFiltros()">Limpar filtros</button>
-  <div class="result-count" id="resultCount"></div>
+  </div>
+  <button onclick="limparFiltros()">Limpar filtros</button>
+  <div id="contador-resultados"></div>
 </div>
 
-<div class="legend">
-  <span><i class="dot" style="background:var(--disp)"></i> Disponível</span>
-  <span><i class="dot" style="background:var(--res)"></i> Reservada</span>
-  <span><i class="dot" style="background:var(--vend)"></i> Vendida</span>
-  <span><i class="dot" style="background:var(--ec)"></i> EC</span>
-  <span><i class="dot" style="background:var(--bloqueado)"></i> 🔒 Bloqueado</span>
-  <span><i class="dot" style="background:#fff;border:2px solid var(--dif-border)"></i> ⭐ Diferenciada</span>
-  <span>✔ <span style="color:var(--sign-ok)">Assinado</span></span>
+<div id="legenda">
+  <span><i class="dot" style="background:var(--verde)"></i> Disponível</span>
+  <span><i class="dot" style="background:var(--laranja)"></i> Reservada</span>
+  <span><i class="dot" style="background:var(--vermelho)"></i> Vendida</span>
+  <span><i class="dot" style="background:var(--roxo)"></i> Permuta</span>
+  <span><i class="dot" style="background:var(--cinza-bloq)"></i> 🔒 Bloqueada</span>
+  <span>⭐ Metragem diferenciada</span>
+  <span>✔ Assinado</span>
 </div>
 
-<div class="container" id="container"></div>
+<div id="andares"></div>
 
-<footer>Gestão Tryp Congonhas — Sistema interno de controle de unidades · dados armazenados localmente neste navegador</footer>
-
-<!-- MODAL -->
-<div class="overlay" id="overlay">
+<div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
-    <div class="modal-head">
-      <h2 id="mTitulo">Unidade 000</h2>
-      <span class="close-x" onclick="fecharModal()">&times;</span>
-    </div>
-    <div class="area-info" id="mArea">Área: 00,00 m²</div>
-    <div class="valor-info" id="mValorDisplay">VGV: R$ 0,00</div>
+    <span class="fechar-x" onclick="fecharModal()">✖</span>
+    <h2 id="modal-titulo">Unidade</h2>
 
-    <div class="section-title">Situação da unidade</div>
-    
-    <div class="checkbox-group">
-      <input type="checkbox" id="mBloqueado">
-      <div>
-        <label for="mBloqueado">🔒 Unidade bloqueada (indisponível para venda)</label>
-        <small>Unidades bloqueadas não podem ser marcadas como vendidas ou reservadas</small>
-      </div>
-    </div>
-    <div class="bloqueada-warning" id="bloqueadaWarning">
-      ⚠️ Esta unidade está bloqueada. Desbloqueie antes de alterar o status para vendido/reservado.
+    <div id="modal-aviso" class="aviso-bloqueio oculto">
+      ⚠ Esta unidade está bloqueada. Não é possível marcar como Vendida ou Reservada enquanto o bloqueio estiver ativo.
     </div>
 
-    <div class="row2" style="margin-top:12px;">
-      <div>
-        <label>Status</label>
-        <select id="mStatus">
-          <option value="disponivel">Disponível</option>
-          <option value="reservada">Reservada</option>
-          <option value="vendida">Vendida</option>
-          <option value="ec">EC</option>
-        </select>
-      </div>
-      <div>
-        <label>Assinatura do contrato</label>
-        <select id="mAssinado">
-          <option value="nao">Não assinado</option>
-          <option value="pendente">Pendente</option>
-          <option value="sim">Assinado</option>
-        </select>
-      </div>
+    <div class="linha">
+      <label><input type="checkbox" id="m-bloqueado" onchange="toggleMotivoBloqueio()"> 🔒 Unidade bloqueada</label>
+    </div>
+    <div class="linha oculto" id="linha-motivo">
+      <label>Motivo do bloqueio</label>
+      <select id="m-motivo">
+        <option value="permuta">Unidade de permuta</option>
+        <option value="reserva_tecnica">Reserva técnica</option>
+        <option value="outro">Outro motivo</option>
+      </select>
     </div>
 
-    <div class="section-title">Dados comerciais</div>
-    <label>Comprador / Cliente</label>
-    <input type="text" id="mComprador" placeholder="Nome do cliente">
-
-    <div class="row3">
-      <div>
-        <label>Corretor responsável</label>
-        <input type="text" id="mCorretor" placeholder="Nome do corretor">
-      </div>
-      <div>
-        <label>Empresa parceira</label>
-        <input type="text" id="mEmpresa" placeholder="Nome da empresa">
-      </div>
-      <div>
-        <label>Nº da proposta</label>
-        <input type="text" id="mProposta" placeholder="Ex: PROP-0045">
-      </div>
+    <div class="linha">
+      <label>Status</label>
+      <select id="m-status">
+        <option value="disponivel">Disponível</option>
+        <option value="reservada">Reservada</option>
+        <option value="vendida">Vendida</option>
+        <option value="permuta">Permuta</option>
+      </select>
     </div>
 
-    <label>Condições de compra</label>
-    <select id="mCondicao">
-      <option value="">Selecione...</option>
-      <option value="a_vista">À vista</option>
-      <option value="financiamento_bancario">Financiamento bancário</option>
-      <option value="parcelado_construtora">Parcelado com a construtora</option>
-      <option value="consorcio">Consórcio</option>
-      <option value="fgts">FGTS + Financiamento</option>
-      <option value="outro">Outro</option>
-    </select>
-
-    <label style="margin-top:14px;">Valor da unidade (VGV)</label>
-    <input type="text" id="mValor" placeholder="R$ 0,00" oninput="formatarMoeda(this)">
-
-    <div class="row2">
-      <div>
-        <label>Data da movimentação</label>
-        <input type="date" id="mData">
-      </div>
-      <div>
-        <label>Valor/m² (calculado)</label>
-        <input type="text" id="mValorM2" readonly style="background:#f0f4f8; color:var(--cinza-600);">
-      </div>
+    <div class="linha">
+      <label>Assinatura</label>
+      <select id="m-assinado">
+        <option value="nao">Não assinado</option>
+        <option value="pendente">Pendente</option>
+        <option value="sim">Assinado</option>
+      </select>
     </div>
 
-    <div class="section-title">Observações</div>
-    <textarea id="mObs" placeholder="Observações adicionais..."></textarea>
+    <div class="linha">
+      <label>Comprador / Cliente</label>
+      <input type="text" id="m-comprador">
+    </div>
+    <div class="linha">
+      <label>Corretor responsável</label>
+      <input type="text" id="m-corretor">
+    </div>
+    <div class="linha">
+      <label>Empresa parceira</label>
+      <input type="text" id="m-empresa">
+    </div>
+    <div class="linha">
+      <label>Condição de compra</label>
+      <select id="m-condicao">
+        <option value="">Selecione...</option>
+        <option value="a_vista">À vista</option>
+        <option value="financiamento_bancario">Financiamento bancário</option>
+        <option value="parcelado_construtora">Parcelado com a construtora</option>
+      </select>
+    </div>
+    <div class="linha">
+      <label>Valor da unidade (VGV)</label>
+      <input type="text" id="m-valor" oninput="onValorInput(event)">
+    </div>
+    <div class="linha">
+      <label>Valor por m² (automático)</label>
+      <input type="text" id="m-valorm2" readonly style="background:#f0f0f0">
+    </div>
+    <div class="linha">
+      <label>Data da movimentação</label>
+      <input type="date" id="m-data">
+    </div>
+    <div class="linha">
+      <label>Observações</label>
+      <textarea id="m-obs"></textarea>
+    </div>
 
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
-      <button class="btn-save" onclick="salvarUnidade()">Salvar alterações</button>
+    <div class="modal-botoes">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarUnidade()">Salvar alterações</button>
     </div>
   </div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-/* ===================== DADOS ===================== */
-const STORAGE_KEY = "tryp_congonhas_unidades_v4";
+/* ===================== CONFIG FIREBASE ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDKUoiJ87ZFrhG0u6vRzpmtBxNuVHTocbo",
+  authDomain: "tryp-congonhas.firebaseapp.com",
+  databaseURL: "https://tryp-congonhas-default-rtdb.firebaseio.com",
+  projectId: "tryp-congonhas",
+  storageBucket: "tryp-congonhas.firebasestorage.app",
+  messagingSenderId: "680207644260",
+  appId: "1:680207644260:web:23fbc785e6ea83bc409171",
+  measurementId: "G-X19D3GGC35"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const unidadesRef = db.ref('unidades');
 
-const areaPattern = [
-21.98,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,
-28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
-22.00,22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.28
-];
+/* ===================== DADOS BASE ===================== */
+const AREAS = [21.98,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,
+               28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
+               22.00,22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.28];
 
-function unidadePadrao(andar, pos){
-  return {
-    id: andar*100 + pos,
-    andar, pos,
-    area: areaPattern[pos-1],
-    status: "disponivel",
-    bloqueado: false,
-    assinado: "nao",
-    comprador: "",
-    corretor: "",
-    empresa: "",
-    proposta: "",
-    condicao: "",
-    valor: 0,
-    data: "",
-    obs: ""
-  };
-}
+const STATUS_LABELS = {disponivel:'Disponível',reservada:'Reservada',vendida:'Vendida',permuta:'Permuta'};
+const CONDICAO_LABELS = {a_vista:'À vista',financiamento_bancario:'Financiamento bancário',parcelado_construtora:'Parcelado com a construtora'};
+const ASSINADO_LABELS = {nao:'Não assinado',pendente:'Pendente',sim:'Assinado'};
+const MOTIVO_LABELS = {permuta:'Unidade de permuta',reserva_tecnica:'Reserva técnica',outro:'Outro motivo'};
 
-function gerarDadosIniciais(){
-  const floors = [];
-  for(let andar=1; andar<=8; andar++){
-    const units = [];
-    for(let pos=1; pos<=30; pos++){
-      units.push(unidadePadrao(andar, pos));
-    }
-    floors.push({ andar, units });
-  }
-  return floors;
-}
-
-function migrarDados(dados){
-  dados.forEach(floor => {
-    floor.units.forEach(u => {
-      if(u.assinado === undefined) u.assinado = "nao";
-      if(u.empresa === undefined) u.empresa = "";
-      if(u.proposta === undefined) u.proposta = "";
-      if(u.condicao === undefined) u.condicao = "";
-      if(u.valor === undefined) u.valor = 0;
-      if(u.bloqueado === undefined) u.bloqueado = false;
-    });
-  });
-  return dados;
-}
-
-function carregarDados(){
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if(saved) return migrarDados(JSON.parse(saved));
-  const dados = gerarDadosIniciais();
-  salvarLocal(dados);
-  return dados;
-}
-function salvarLocal(dados){ localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); }
-
-let floors = carregarDados();
-let unidadeSelecionada = null;
+let unidades = {};
+let unidadeSelecionadaId = null;
 let andaresColapsados = {};
 
-/* ===================== HELPERS ===================== */
-const todasUnidades = () => floors.flatMap(f => f.units);
-const isDiferenciada = (area) => area >= 22.00;
-const fmt = (n) => n.toFixed(2).replace(".", ",");
-const fmtMoeda = (v) => "R$ " + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-const parseMoeda = (s) => parseFloat(s.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.')) || 0;
-
-const condicaoLabel = {
-  "a_vista":"À vista",
-  "financiamento_bancario":"Financiamento bancário",
-  "parcelado_construtora":"Parcelado com a construtora",
-  "consorcio":"Consórcio",
-  "fgts":"FGTS + Financiamento",
-  "outro":"Outro",
-  "":""
-};
-
-function atualizarTimestamp(){
-  const now = new Date();
-  document.getElementById("updatedAt").textContent =
-    "Atualizado em " + now.toLocaleDateString('pt-BR') + " às " + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+function gerarUnidadesPadrao(){
+  const obj = {};
+  for(let andar=1; andar<=8; andar++){
+    for(let pos=1; pos<=30; pos++){
+      const id = andar*100+pos;
+      obj[id] = {
+        id, andar, pos, area: AREAS[pos-1],
+        status:"disponivel", bloqueado:false, motivoBloqueio:"",
+        assinado:"nao", comprador:"", corretor:"", empresa:"",
+        condicao:"", valor:0, data:"", obs:""
+      };
+    }
+  }
+  return obj;
 }
 
-/* ===================== SELECT DE ANDARES ===================== */
-(function popularAndares(){
-  const sel = document.getElementById("fAndar");
-  for(let a=8; a>=1; a--){
-    const opt = document.createElement("option");
-    opt.value = a; opt.textContent = "Andar " + a;
-    sel.appendChild(opt);
+/* ===================== CONEXÃO COM FIREBASE ===================== */
+unidadesRef.on('value', snapshot => {
+  const dados = snapshot.val();
+  if(!dados){
+    const padrao = gerarUnidadesPadrao();
+    unidadesRef.set(padrao);
+    unidades = padrao;
+  } else {
+    unidades = dados;
   }
-})();
+  document.getElementById('overlay-loading').classList.add('hidden');
+  document.getElementById('status-conexao').textContent = '🔄 Sincronizado';
+  renderizarTudo();
+}, err => {
+  document.getElementById('status-conexao').textContent = '⚠ Erro de conexão';
+  alert('Não foi possível conectar ao banco de dados. Verifique sua internet.');
+});
 
-/* ===================== DASHBOARD ===================== */
-function renderDashboard(){
-  const all = todasUnidades();
-  const total = all.length;
-  const disponiveis = all.filter(u=>u.status==="disponivel" && !u.bloqueado).length;
-  const reservadas = all.filter(u=>u.status==="reservada").length;
-  const vendidas = all.filter(u=>u.status==="vendida").length;
-  const ec = all.filter(u=>u.status==="ec").length;
-  const bloqueados = all.filter(u=>u.bloqueado).length;
-  const dif = all.filter(u=>isDiferenciada(u.area)).length;
-  const assinados = all.filter(u=>u.assinado==="sim").length;
-  
-  const vgvTotal = all.reduce((acc, u) => acc + (u.valor || 0), 0);
-  const vgvVendidas = all.filter(u=>u.status==="vendida").reduce((acc, u) => acc + (u.valor || 0), 0);
-  
-  const pct = (n) => ((n/total)*100).toFixed(1) + "%";
+/* ===================== FORMATAÇÃO DE MOEDA ===================== */
+function onValorInput(e){
+  let digitos = e.target.value.replace(/\D/g,'');
+  if(!digitos) digitos = '0';
+  const numero = parseInt(digitos,10)/100;
+  e.target.value = numero.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  atualizarValorM2();
+}
+function getValorNumerico(input){
+  const digitos = input.value.replace(/\D/g,'');
+  return digitos ? parseInt(digitos,10)/100 : 0;
+}
+function formatarMoeda(v){
+  return (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function atualizarValorM2(){
+  const valor = getValorNumerico(document.getElementById('m-valor'));
+  const u = unidades[unidadeSelecionadaId];
+  const area = u ? u.area : 0;
+  const m2 = area>0 ? valor/area : 0;
+  document.getElementById('m-valorm2').value = formatarMoeda(m2);
+}
 
-  document.getElementById("dashboard").innerHTML = `
-    <div class="card total"><h3>${total}</h3><p>Total de unidades</p></div>
-    <div class="card disponivel"><h3>${disponiveis}</h3><p>Disponíveis</p><div class="pct">${pct(disponiveis)}</div></div>
-    <div class="card reservada"><h3>${reservadas}</h3><p>Reservadas</p><div class="pct">${pct(reservadas)}</div></div>
-    <div class="card vendida"><h3>${vendidas}</h3><p>Vendidas</p><div class="pct">${pct(vendidas)}</div></div>
-    <div class="card ec"><h3>${ec}</h3><p>EC</p><div class="pct">${pct(ec)}</div></div>
-    <div class="card bloqueado"><h3>${bloqueados}</h3><p>Bloqueados</p></div>
-    <div class="card assinado"><h3>${assinados}</h3><p>Contratos assinados</p></div>
-    <div class="card dif"><h3>${fmtMoeda(vgvTotal)}</h3><p>VGV Total</p><div class="valor-total">Vendidas: ${fmtMoeda(vgvVendidas)}</div></div>
+/* ===================== RENDER ===================== */
+function renderizarTudo(){
+  preencherSelectAndar();
+  renderizarDashboard();
+  renderizarAndares();
+}
+
+function preencherSelectAndar(){
+  const sel = document.getElementById('f-andar');
+  if(sel.options.length>1) return;
+  for(let a=1;a<=8;a++){
+    const op = document.createElement('option');
+    op.value=a; op.textContent=a+'º Andar';
+    sel.appendChild(op);
+  }
+}
+
+function renderizarDashboard(){
+  const lista = Object.values(unidades);
+  const total = lista.length;
+  const disp = lista.filter(u=>u.status==='disponivel').length;
+  const res = lista.filter(u=>u.status==='reservada').length;
+  const vend = lista.filter(u=>u.status==='vendida').length;
+  const perm = lista.filter(u=>u.status==='permuta').length;
+  const bloq = lista.filter(u=>u.bloqueado).length;
+  const vgvTotal = lista.reduce((s,u)=>s+(u.valor||0),0);
+  const vgvVendido = lista.filter(u=>u.status==='vendida').reduce((s,u)=>s+(u.valor||0),0);
+
+  document.getElementById('dashboard').innerHTML = `
+    <div class="card"><div class="num">${total}</div><div class="lbl">Total de unidades</div></div>
+    <div class="card"><div class="num">${disp}</div><div class="lbl">Disponíveis</div></div>
+    <div class="card"><div class="num">${res}</div><div class="lbl">Reservadas</div></div>
+    <div class="card"><div class="num">${vend}</div><div class="lbl">Vendidas</div></div>
+    <div class="card"><div class="num">${perm}</div><div class="lbl">Permuta</div></div>
+    <div class="card"><div class="num">${bloq}</div><div class="lbl">Bloqueadas</div></div>
+    <div class="card"><div class="num">${formatarMoeda(vgvTotal)}</div><div class="lbl">VGV Total</div></div>
+    <div class="card"><div class="num">${formatarMoeda(vgvVendido)}</div><div class="lbl">VGV Vendido</div></div>
   `;
 }
 
-/* ===================== BUSCA GERAL ===================== */
-function matchBuscaGeral(u, termo){
-  if(!termo) return true;
-  const t = termo.toLowerCase();
-  const campos = [
-    String(u.id),
-    u.comprador || "",
-    u.corretor || "",
-    u.empresa || "",
-    u.proposta || "",
-    condicaoLabel[u.condicao] || "",
-    fmtMoeda(u.valor)
-  ];
-  return campos.some(c => c.toLowerCase().includes(t));
+function unidadeBateComFiltros(u){
+  const busca = document.getElementById('f-busca').value.trim().toLowerCase();
+  const fAndar = document.getElementById('f-andar').value;
+  const fStatus = document.getElementById('f-status').value;
+  const fAssin = document.getElementById('f-assinatura').value;
+  const fMetro = document.getElementById('f-metragem').value;
+
+  if(fAndar && String(u.andar)!==fAndar) return false;
+  if(fStatus==='bloqueado' && !u.bloqueado) return false;
+  if(fStatus && fStatus!=='bloqueado' && u.status!==fStatus) return false;
+  if(fAssin && u.assinado!==fAssin) return false;
+  if(fMetro==='diferenciadas' && u.area<22) return false;
+  if(fMetro==='padrao' && u.area>=22) return false;
+
+  if(busca){
+    const condTxt = CONDICAO_LABELS[u.condicao] || '';
+    const campo = `${u.id} ${u.comprador||''} ${u.corretor||''} ${u.empresa||''} ${condTxt}`.toLowerCase();
+    if(!campo.includes(busca)) return false;
+  }
+  return true;
 }
 
-/* ===================== RENDER PRINCIPAL ===================== */
-function render(){
-  renderDashboard();
-  atualizarTimestamp();
-
-  const fAndar = document.getElementById("fAndar").value;
-  const fStatus = document.getElementById("fStatus").value;
-  const fDif = document.getElementById("fDif").value;
-  const fAssinado = document.getElementById("fAssinado").value;
-  const fBuscaGeral = document.getElementById("fBuscaGeral").value.trim();
-
-  const container = document.getElementById("container");
-  container.innerHTML = "";
-
-  const floorsOrdenados = [...floors].sort((a,b)=> b.andar - a.andar);
+function renderizarAndares(){
+  const cont = document.getElementById('andares');
+  cont.innerHTML = '';
   let totalVisiveis = 0;
 
-  floorsOrdenados.forEach(floor => {
-    if(fAndar !== "todos" && Number(fAndar) !== floor.andar) return;
+  for(let andar=8; andar>=1; andar--){
+    const unidadesAndar = [];
+    for(let pos=1;pos<=30;pos++){
+      unidadesAndar.push(unidades[andar*100+pos]);
+    }
+    const visiveis = unidadesAndar.filter(unidadeBateComFiltros);
+    totalVisiveis += visiveis.length;
 
-    const disp = floor.units.filter(u=>u.status==="disponivel" && !u.bloqueado).length;
-    const res = floor.units.filter(u=>u.status==="reservada").length;
-    const ven = floor.units.filter(u=>u.status==="vendida").length;
-    const ec = floor.units.filter(u=>u.status==="ec").length;
-    const bloq = floor.units.filter(u=>u.bloqueado).length;
+    const disp = unidadesAndar.filter(u=>u.status==='disponivel').length;
+    const res = unidadesAndar.filter(u=>u.status==='reservada').length;
+    const vend = unidadesAndar.filter(u=>u.status==='vendida').length;
+    const perm = unidadesAndar.filter(u=>u.status==='permuta').length;
+    const bloq = unidadesAndar.filter(u=>u.bloqueado).length;
 
-    const colapsado = !!andaresColapsados[floor.andar];
-
-    const block = document.createElement("div");
-    block.className = "floor-block";
-    block.innerHTML = `
-      <div class="floor-header ${colapsado?'collapsed':''}" onclick="toggleAndar(${floor.andar})">
-        <span>Andar ${floor.andar}</span>
-        <div class="mini-stats">
-          <span><b>${disp}</b> disp.</span>
-          <span><b>${res}</b> res.</span>
-          <span><b>${ven}</b> vend.</span>
-          <span><b>${ec}</b> EC</span>
-          ${bloq>0 ? `<span><b>${bloq}</b> 🔒</span>` : ""}
+    const bloco = document.createElement('div');
+    bloco.className = 'andar-bloco';
+    bloco.innerHTML = `
+      <div class="andar-header" onclick="toggleAndar(${andar})">
+        <h2>${andar}º Andar</h2>
+        <div class="andar-stats">
+          <span>🟢 ${disp} disp.</span>
+          <span>🟠 ${res} res.</span>
+          <span>🔴 ${vend} vend.</span>
+          <span>🟣 ${perm} permuta</span>
+          <span>🔒 ${bloq} bloq.</span>
         </div>
-        <span class="toggle-icon">▼</span>
       </div>
-      <div class="floor-grid-wrapper ${colapsado?'hidden':''}" id="grid-wrap-${floor.andar}">
-        <div class="floor-grid" id="grid-${floor.andar}"></div>
-      </div>
+      <div class="andar-grid ${andaresColapsados[andar]?'collapsed':''}" id="grid-${andar}"></div>
     `;
-    container.appendChild(block);
+    cont.appendChild(bloco);
 
-    const grid = block.querySelector(`#grid-${floor.andar}`);
-
-    floor.units.forEach(u => {
-      const matchStatus = fStatus === "todos" || 
-                         (fStatus === "bloqueado" && u.bloqueado) ||
-                         (fStatus !== "bloqueado" && u.status === fStatus && !u.bloqueado);
-      const matchDif = fDif === "todos" ||
-                        (fDif === "sim" && isDiferenciada(u.area)) ||
-                        (fDif === "nao" && !isDiferenciada(u.area));
-      const matchAssinado = fAssinado === "todos" || u.assinado === fAssinado;
-      const matchBusca = matchBuscaGeral(u, fBuscaGeral);
-      const visivel = matchStatus && matchDif && matchAssinado && matchBusca;
-      if(visivel) totalVisiveis++;
-
-      let badges = "";
-      if(u.bloqueado) badges += '<span class="lock-icon">🔒</span>';
-      else if(u.assinado === "sim") badges += '<span class="sign-badge ok">✔</span>';
-      else if(u.assinado === "pendente") badges += '<span class="sign-badge pend">◐</span>';
-
-      const div = document.createElement("div");
-      div.className = `unit ${u.bloqueado ? 'bloqueada' : 'status-'+u.status}` + (isDiferenciada(u.area) ? " diferenciada" : "") + (visivel ? "" : " dim");
-      div.title = u.comprador ? `Comprador: ${u.comprador}${u.valor ? '\nVGV: '+fmtMoeda(u.valor) : ''}` : (u.valor ? `VGV: ${fmtMoeda(u.valor)}` : "");
+    const grid = bloco.querySelector(`#grid-${andar}`);
+    unidadesAndar.forEach(u=>{
+      const visivel = unidadeBateComFiltros(u);
+      const div = document.createElement('div');
+      div.className = `unit ${u.status} ${u.bloqueado?'bloqueado':''} ${u.area>=22?'diferenciada':''}`;
+      if(!visivel) div.setAttribute('hidden','');
+      div.onclick = () => abrirModal(u.id);
+      div.title = `${u.comprador?('Comprador: '+u.comprador+'\\n'):''}${u.valor?('VGV: '+formatarMoeda(u.valor)+'\\n'):''}${u.bloqueado?('Bloqueio: '+MOTIVO_LABELS[u.motivoBloqueio]):''}`;
       div.innerHTML = `
-        ${badges}
-        <b>${u.id}</b>
-        <small>${fmt(u.area)} m²</small>
-        ${isDiferenciada(u.area) ? '<span class="star">⭐</span>' : ""}
+        <div class="icones">${u.bloqueado?'🔒':''}${u.assinado==='sim'?'✔':(u.assinado==='pendente'?'◐':'')}${u.area>=22?'⭐':''}</div>
+        <div class="num">${u.id}</div>
+        <div class="area">${u.area.toFixed(2)}m²</div>
       `;
-      if(!u.bloqueado) div.onclick = () => abrirModal(u.id);
       grid.appendChild(div);
     });
-  });
+  }
 
-  document.getElementById("resultCount").textContent = `${totalVisiveis} unidade(s) encontrada(s)`;
+  document.getElementById('contador-resultados').textContent = `${totalVisiveis} unidade(s) encontrada(s)`;
 }
 
 function toggleAndar(andar){
   andaresColapsados[andar] = !andaresColapsados[andar];
-  render();
+  renderizarAndares();
 }
 
-/* ===================== FILTROS ===================== */
 function limparFiltros(){
-  document.getElementById("fAndar").value = "todos";
-  document.getElementById("fStatus").value = "todos";
-  document.getElementById("fDif").value = "todos";
-  document.getElementById("fAssinado").value = "todos";
-  document.getElementById("fBuscaGeral").value = "";
-  render();
+  document.getElementById('f-busca').value='';
+  document.getElementById('f-andar').value='';
+  document.getElementById('f-status').value='';
+  document.getElementById('f-assinatura').value='';
+  document.getElementById('f-metragem').value='';
+  renderizarAndares();
 }
+['f-busca','f-andar','f-status','f-assinatura','f-metragem'].forEach(id=>{
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById(id).addEventListener('input', renderizarAndares);
+    document.getElementById(id).addEventListener('change', renderizarAndares);
+  });
+});
 
 /* ===================== MODAL ===================== */
-function formatarMoeda(input){
-  let v = parseMoeda(input.value);
-  input.value = fmtMoeda(v);
-  atualizarValorM2();
-}
-
-function atualizarValorM2(){
-  const u = unidadeSelecionada;
-  if(!u) return;
-  const valor = parseMoeda(document.getElementById("mValor").value);
-  const m2 = valor / u.area;
-  document.getElementById("mValorM2").value = fmtMoeda(m2) + " /m²";
-}
-
 function abrirModal(id){
-  const unidade = todasUnidades().find(u => u.id === id);
-  unidadeSelecionada = unidade;
-
-  document.getElementById("mTitulo").textContent = "Unidade " + unidade.id;
-  document.getElementById("mArea").textContent = "Área privativa: " + fmt(unidade.area) + " m²" + (isDiferenciada(unidade.area) ? " · ⭐ Metragem diferenciada" : "");
-  document.getElementById("mValorDisplay").textContent = "VGV: " + fmtMoeda(unidade.valor);
-  
-  document.getElementById("mBloqueado").checked = unidade.bloqueado;
-  document.getElementById("mStatus").value = unidade.status;
-  document.getElementById("mAssinado").value = unidade.assinado;
-  document.getElementById("mComprador").value = unidade.comprador;
-  document.getElementById("mCorretor").value = unidade.corretor;
-  document.getElementById("mEmpresa").value = unidade.empresa;
-  document.getElementById("mProposta").value = unidade.proposta;
-  document.getElementById("mCondicao").value = unidade.condicao;
-  document.getElementById("mValor").value = unidade.valor ? fmtMoeda(unidade.valor) : "";
-  document.getElementById("mData").value = unidade.data;
-  document.getElementById("mObs").value = unidade.obs;
-
+  unidadeSelecionadaId = id;
+  const u = unidades[id];
+  document.getElementById('modal-titulo').textContent = `Unidade ${u.id} — ${u.area.toFixed(2)}m²`;
+  document.getElementById('m-bloqueado').checked = !!u.bloqueado;
+  document.getElementById('m-motivo').value = u.motivoBloqueio || 'permuta';
+  document.getElementById('m-status').value = u.status;
+  document.getElementById('m-assinado').value = u.assinado || 'nao';
+  document.getElementById('m-comprador').value = u.comprador || '';
+  document.getElementById('m-corretor').value = u.corretor || '';
+  document.getElementById('m-empresa').value = u.empresa || '';
+  document.getElementById('m-condicao').value = u.condicao || '';
+  document.getElementById('m-valor').value = formatarMoeda(u.valor || 0);
+  document.getElementById('m-data').value = u.data || '';
+  document.getElementById('m-obs').value = u.obs || '';
+  toggleMotivoBloqueio();
   atualizarValorM2();
-  verificarBloqueio();
-  
-  document.getElementById("mBloqueado").addEventListener("change", verificarBloqueio);
-  
-  document.getElementById("overlay").classList.add("active");
+  document.getElementById('modal-overlay').classList.remove('hidden');
 }
 
-function verificarBloqueio(){
-  const bloqueado = document.getElementById("mBloqueado").checked;
-  const status = document.getElementById("mStatus").value;
-  const warning = document.getElementById("bloqueadaWarning");
-  const statusSelect = document.getElementById("mStatus");
-  
-  if(bloqueado){
-    warning.classList.add("active");
-    if(status === "vendida" || status === "reservada"){
-      statusSelect.value = "disponivel";
-    }
-    statusSelect.disabled = true;
-  } else {
-    warning.classList.remove("active");
-    statusSelect.disabled = false;
-  }
+function toggleMotivoBloqueio(){
+  const marcado = document.getElementById('m-bloqueado').checked;
+  document.getElementById('linha-motivo').classList.toggle('oculto', !marcado);
+  document.getElementById('modal-aviso').classList.toggle('oculto', !marcado);
 }
 
 function fecharModal(){
-  document.getElementById("overlay").classList.remove("active");
-  unidadeSelecionada = null;
+  document.getElementById('modal-overlay').classList.add('hidden');
+  unidadeSelecionadaId = null;
 }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') fecharModal(); });
+document.getElementById('modal-overlay')?.addEventListener('click', e=>{
+  if(e.target.id==='modal-overlay') fecharModal();
+});
 
 function salvarUnidade(){
-  if(!unidadeSelecionada) return;
-  
-  const bloqueado = document.getElementById("mBloqueado").checked;
-  const status = document.getElementById("mStatus").value;
-  
-  if(bloqueado && (status === "vendida" || status === "reservada")){
-    alert("Não é possível vender ou reservar uma unidade bloqueada. Desbloqueie primeiro ou mude o status para disponível/EC.");
+  const id = unidadeSelecionadaId;
+  const bloqueado = document.getElementById('m-bloqueado').checked;
+  const status = document.getElementById('m-status').value;
+
+  if(bloqueado && (status==='vendida' || status==='reservada')){
+    alert('Esta unidade está bloqueada. Desmarque o bloqueio antes de marcar como Vendida ou Reservada.');
     return;
   }
-  
-  unidadeSelecionada.bloqueado = bloqueado;
-  unidadeSelecionada.status = status;
-  unidadeSelecionada.assinado = document.getElementById("mAssinado").value;
-  unidadeSelecionada.comprador = document.getElementById("mComprador").value;
-  unidadeSelecionada.corretor = document.getElementById("mCorretor").value;
-  unidadeSelecionada.empresa = document.getElementById("mEmpresa").value;
-  unidadeSelecionada.proposta = document.getElementById("mProposta").value;
-  unidadeSelecionada.condicao = document.getElementById("mCondicao").value;
-  unidadeSelecionada.valor = parseMoeda(document.getElementById("mValor").value);
-  unidadeSelecionada.data = document.getElementById("mData").value;
-  unidadeSelecionada.obs = document.getElementById("mObs").value;
-  
-  salvarLocal(floors);
-  fecharModal();
-  render();
-}
 
-document.getElementById("overlay").addEventListener("click", (e)=>{
-  if(e.target.id === "overlay") fecharModal();
-});
-document.addEventListener("keydown", (e)=>{
-  if(e.key === "Escape") fecharModal();
-});
+  const atualizado = {
+    id, andar: unidades[id].andar, pos: unidades[id].pos, area: unidades[id].area,
+    status,
+    bloqueado,
+    motivoBloqueio: bloqueado ? document.getElementById('m-motivo').value : '',
+    assinado: document.getElementById('m-assinado').value,
+    comprador: document.getElementById('m-comprador').value.trim(),
+    corretor: document.getElementById('m-corretor').value.trim(),
+    empresa: document.getElementById('m-empresa').value.trim(),
+    condicao: document.getElementById('m-condicao').value,
+    valor: getValorNumerico(document.getElementById('m-valor')),
+    data: document.getElementById('m-data').value,
+    obs: document.getElementById('m-obs').value.trim()
+  };
+
+  unidades[id] = atualizado;
+  renderizarTudo();
+  document.getElementById('status-conexao').textContent = '⏳ Salvando...';
+  unidadesRef.child(id).set(atualizado)
+    .then(()=>{ document.getElementById('status-conexao').textContent = '🔄 Sincronizado'; })
+    .catch(()=>{ document.getElementById('status-conexao').textContent = '⚠ Erro ao salvar'; alert('Erro ao salvar. Verifique sua internet e tente novamente.'); });
+
+  fecharModal();
+}
 
 /* ===================== EXPORTAR CSV ===================== */
-function exportCSV(){
-  const all = todasUnidades();
-  let csv = "Unidade;Andar;Area(m2);Status;Bloqueado;Assinatura;Comprador;Corretor;Empresa Parceira;Proposta;Condicao de Compra;VGV(R$);Data;Observacoes\n";
-  all.forEach(u => {
-    csv += `${u.id};${u.andar};${fmt(u.area)};${u.status};${u.bloqueado?'Sim':'Não'};${u.assinado};${u.comprador};${u.corretor};${u.empresa};${u.proposta};${condicaoLabel[u.condicao]||""};${u.valor.toFixed(2).replace(".",",")};${u.data};${(u.obs||"").replace(/\n/g," ")}\n`;
+function exportarCSV(){
+  const linhas = [['Unidade','Andar','Area(m2)','Status','Bloqueado','Motivo Bloqueio','Assinatura','Comprador','Corretor','Empresa Parceira','Condicao de Compra','VGV(R$)','Data','Observacoes']];
+  Object.values(unidades).sort((a,b)=>a.id-b.id).forEach(u=>{
+    linhas.push([
+      u.id, u.andar, u.area.toFixed(2),
+      STATUS_LABELS[u.status]||u.status,
+      u.bloqueado?'Sim':'Não',
+      u.bloqueado?(MOTIVO_LABELS[u.motivoBloqueio]||''):'',
+      ASSINADO_LABELS[u.assinado]||'',
+      u.comprador||'', u.corretor||'', u.empresa||'',
+      CONDICAO_LABELS[u.condicao]||'',
+      (u.valor||0).toFixed(2).replace('.',','),
+      u.data||'', (u.obs||'').replace(/;/g,',')
+    ]);
   });
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "tryp_congonhas_unidades.csv";
-  link.click();
+  const csv = linhas.map(l=>l.join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'gestao_tryp_congonhas.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
-
-/* ===================== INICIALIZAÇÃO ===================== */
-render();
 </script>
 </body>
 </html>
