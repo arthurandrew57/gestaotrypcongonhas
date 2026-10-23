@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão Tryp Congonhas | Controle de Unidades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul-900:#0f2742;
+    --azul-800:#16375c;
+    --azul-700:#1e4a74;
+    --azul-600:#2a5d8f;
+    --azul-500:#3d74a8;
+    --cinza-50:#f5f7fa;
+    --cinza-100:#eceff3;
+    --cinza-200:#dde3ea;
+    --cinza-400:#9aa5b1;
+    --cinza-600:#5c6773;
+    --texto:#1c2733;
+
+    --disp:#2f9e6e;
+    --disp-bg:#e5f6ee;
+    --res:#c98a1f;
+    --res-bg:#fbf0dd;
+    --vend:#b84242;
+    --vend-bg:#fbe8e8;
+    --ec:#3d74a8;
+    --ec-bg:#e6eef5;
+    --dif-border:#c9a227;
+
+    --sign-ok:#2f9e6e;
+    --sign-pend:#c98a1f;
+    --sign-no:#9aa5b1;
+
+    --bloqueado:#4a5568;
+    --bloqueado-bg:#e2e8f0;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Inter',Arial,sans-serif;
+    background: var(--cinza-50);
+    color: var(--texto);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    background: linear-gradient(120deg, var(--azul-900), var(--azul-700));
+    color:#fff;
+    padding: 22px 36px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-icon{
+    width:46px; height:46px;
+    background: rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .brand h1{ font-size:19px; font-weight:700; letter-spacing:.3px; }
+  .brand span{ font-size:12px; color:#cfdcea; font-weight:400; }
+
+  .header-actions{ display:flex; gap:10px; align-items:center; }
+  .btn-export{
+    background:#fff;
+    color:var(--azul-800);
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex; align-items:center; gap:8px;
+    transition:.2s;
+  }
+  .btn-export:hover{ background:#dfe8f1; transform:translateY(-1px); }
+
+  .updated-at{ font-size:11px; color:#aebfd2; }
+
+  /* ===== DASHBOARD ===== */
+  .dashboard{
+    display:grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap:14px;
+    padding: 22px 36px;
+    background:#fff;
+    border-bottom:1px solid var(--cinza-200);
+  }
+  .card{
+    background: var(--cinza-50);
+    border:1px solid var(--cinza-200);
+    border-radius:12px;
+    padding:16px 18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; }
+  .card h3{ font-size:24px; font-weight:800; color:var(--azul-900); }
+  .card p{ font-size:11px; color:var(--cinza-600); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; font-weight:600;}
+  .card .pct{ font-size:11px; color:var(--cinza-400); margin-top:2px; }
+  .card .valor-total{ font-size:12px; color:var(--azul-700); font-weight:700; margin-top:4px; }
+
+  .card.total::before{ background:var(--azul-700); }
+  .card.disponivel::before{ background:var(--disp); }
+  .card.reservada::before{ background:var(--res); }
+  .card.vendida::before{ background:var(--vend); }
+  .card.ec::before{ background:var(--ec); }
+  .card.dif::before{ background:var(--dif-border); }
+  .card.assinado::before{ background:var(--sign-ok); }
+  .card.bloqueado::before{ background:var(--bloqueado); }
+
+  /* ===== FILTERS ===== */
+  .filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    padding: 16px 36px;
+    background:#fff;
+    border-bottom:1px solid var(--cinza-200);
+    position:sticky;
+    top:0;
+    z-index:60;
+  }
+  .filters label.fgroup{ display:flex; flex-direction:column; gap:4px; }
+  .filters label.fgroup span{
+    font-size:10.5px; color:var(--cinza-600); font-weight:600; text-transform:uppercase; letter-spacing:.4px;
+  }
+  .filters select, .filters input{
+    padding:9px 12px;
+    border-radius:8px;
+    border:1px solid var(--cinza-200);
+    font-size:13px;
+    background:var(--cinza-50);
+    color:var(--texto);
+    min-width:150px;
+    font-family:inherit;
+  }
+  .filters input#fBuscaGeral{ min-width:260px; }
+  .filters select:focus, .filters input:focus{ outline:none; border-color:var(--azul-600); background:#fff; }
+  .filters .btn-clear{
+    background:transparent;
+    border:1px solid var(--cinza-200);
+    color:var(--azul-800);
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .filters .btn-clear:hover{ background:var(--cinza-100); }
+  .filters .result-count{
+    font-size:12px; color:var(--cinza-600); margin-left:auto; padding-bottom:9px; font-weight:600;
+  }
+
+  /* ===== LEGEND ===== */
+  .legend{
+    display:flex;
+    gap:22px;
+    padding: 12px 36px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    background:#fff;
+    border-bottom:1px solid var(--cinza-100);
+    color:var(--cinza-600);
+  }
+  .legend span{ display:flex; align-items:center; gap:7px; font-weight:500; }
+  .dot{ width:13px; height:13px; border-radius:4px; display:inline-block; }
+
+  /* ===== FLOORS ===== */
+  .container{ padding: 24px 36px 70px; }
+
+  .floor-block{
+    margin-bottom: 22px;
+    background:#fff;
+    border-radius:14px;
+    border:1px solid var(--cinza-200);
+    overflow:hidden;
+  }
+  .floor-header{
+    background: var(--azul-900);
+    color:#fff;
+    padding: 13px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    user-select:none;
+  }
+  .floor-header .mini-stats{ display:flex; gap:14px; font-size:11.5px; font-weight:500; flex-wrap:wrap; color:#cdd9e6;}
+  .floor-header .mini-stats b{ color:#fff; font-weight:700; }
+  .floor-header .toggle-icon{ transition: transform .25s; font-size:12px; }
+  .floor-header.collapsed .toggle-icon{ transform: rotate(-90deg); }
+
+  .floor-grid-wrapper{ overflow-x:auto; padding:16px; }
+  .floor-grid-wrapper.hidden{ display:none; }
+
+  .floor-grid{
+    display:grid;
+    grid-template-columns: repeat(30, minmax(70px,1fr));
+    gap:7px;
+    min-width:2150px;
+  }
+
+  .unit{
+    border-radius:9px;
+    padding:8px 5px;
+    text-align:center;
+    cursor:pointer;
+    font-size:12px;
+    position:relative;
+    transition: all .15s ease;
+    border:1.5px solid transparent;
+    background:#fff;
+  }
+  .unit b{ display:block; font-size:13.5px; font-weight:700; }
+  .unit small{ display:block; font-size:10px; margin-top:2px; font-weight:500; }
+  .unit:hover{ transform: translateY(-3px); box-shadow:0 6px 14px rgba(15,39,66,.18); z-index:5; }
+  .unit.dim{ opacity:.15; pointer-events:none; }
+  .unit.bloqueada{ 
+    background:var(--bloqueado-bg); 
+    color:var(--bloqueado); 
+    border-color:var(--cinza-400);
+    cursor:not-allowed;
+  }
+  .unit.bloqueada:hover{ transform:none; box-shadow:none; }
+
+  .status-disponivel{ background:var(--disp-bg); color:var(--disp); border-color:#c7ebd9;}
+  .status-reservada{ background:var(--res-bg); color:var(--res); border-color:#f0dcb2;}
+  .status-vendida{ background:var(--vend-bg); color:var(--vend); border-color:#f3cccc;}
+  .status-ec{ background:var(--ec-bg); color:var(--ec); border-color:#c6dced;}
+
+  .diferenciada{ border-color:var(--dif-border) !important; box-shadow: inset 0 0 0 1px var(--dif-border); }
+  .star{ position:absolute; top:3px; right:5px; font-size:9px; }
+  .lock-icon{ position:absolute; top:3px; left:5px; font-size:9px; }
+
+  .sign-badge{
+    position:absolute; top:3px; right:5px; font-size:9px; font-weight:700;
+  }
+  .sign-badge.ok{ color:var(--sign-ok); }
+  .sign-badge.pend{ color:var(--sign-pend); }
+
+  /* ===== MODAL ===== */
+  .overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(15,39,66,.55);
+    align-items:center; justify-content:center;
+    z-index:999;
+    backdrop-filter: blur(2px);
+    padding: 20px;
+  }
+  .overlay.active{ display:flex; }
+  .modal{
+    background:#fff;
+    width:480px;
+    max-width:100%;
+    max-height: 92vh;
+    overflow-y:auto;
+    border-radius:16px;
+    padding:26px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+    animation: pop .18s ease;
+  }
+  @keyframes pop{ from{ transform:scale(.95); opacity:0;} to{ transform:scale(1); opacity:1;} }
+
+  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;}
+  .modal h2{ font-size:19px; color:var(--azul-900); font-weight:700; }
+  .modal .close-x{ cursor:pointer; color:var(--cinza-400); font-size:20px; line-height:1;}
+  .modal .close-x:hover{ color:var(--texto); }
+  .modal .area-info{ font-size:12.5px; color:var(--cinza-600); margin-bottom:10px; }
+  .modal .valor-info{ font-size:14px; color:var(--azul-800); font-weight:700; margin-bottom:14px; }
+
+  .modal .section-title{
+    font-size:11px; font-weight:800; color:var(--azul-700); text-transform:uppercase;
+    letter-spacing:.6px; margin-top:18px; padding-top:14px; border-top:1px solid var(--cinza-100);
+  }
+  .modal .section-title:first-of-type{ border-top:none; padding-top:0; margin-top:6px; }
+
+  .modal .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .modal .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+  .modal label{ font-size:11.5px; font-weight:700; display:block; margin-top:12px; margin-bottom:5px; color:var(--cinza-600); text-transform:uppercase; letter-spacing:.4px;}
+  .modal select, .modal input, .modal textarea{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--cinza-200); font-size:13.5px; font-family:inherit; background:var(--cinza-50);
+  }
+  .modal select:focus, .modal input:focus, .modal textarea:focus{ outline:none; border-color:var(--azul-600); background:#fff;}
+  .modal textarea{ resize:vertical; min-height:55px; }
+
+  .modal .checkbox-group{
+    display:flex; align-items:center; gap:8px; margin-top:14px; padding:12px;
+    background:var(--cinza-50); border-radius:8px; border:1px solid var(--cinza-200);
+  }
+  .modal .checkbox-group input[type="checkbox"]{ width:18px; height:18px; cursor:pointer; }
+  .modal .checkbox-group label{ margin:0; cursor:pointer; color:var(--texto); font-size:13px; text-transform:none; letter-spacing:0; }
+  .modal .checkbox-group small{ display:block; color:var(--cinza-600); font-size:11px; margin-top:4px; }
+
+  .modal .bloqueada-warning{
+    background:#fed7d7; color:#c53030; padding:10px; border-radius:8px; font-size:12px; margin-top:10px;
+    border-left:4px solid #c53030; display:none;
+  }
+  .modal .bloqueada-warning.active{ display:block; }
+
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+  .modal-actions button{ padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-size:13.5px; font-weight:600; transition:.2s; }
+  .btn-save{ background:var(--azul-800); color:#fff; }
+  .btn-save:hover{ background:var(--azul-900); }
+  .btn-cancel{ background:var(--cinza-100); color:var(--cinza-600); }
+  .btn-cancel:hover{ background:var(--cinza-200); }
+
+  footer{
+    text-align:center; padding:18px; font-size:11.5px; color:var(--cinza-400);
+    background:#fff; border-top:1px solid var(--cinza-200);
+  }
+
+  @media (max-width: 1200px){ .dashboard{ grid-template-columns: repeat(4,1fr); } }
+  @media (max-width: 700px){
+    .dashboard{ grid-template-columns: repeat(2,1fr); }
+    header, .filters, .dashboard, .legend, .container{ padding-left:16px; padding-right:16px; }
+    .modal .row2, .modal .row3{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🏢</div>
+    <div>
+      <h1>Gestão Tryp Congonhas</h1>
+      <span>Painel de Controle de Unidades · 8 pavimentos · 240 unidades</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="updated-at" id="updatedAt"></div>
+    <button class="btn-export" onclick="exportCSV()">⬇ Exportar relatório (CSV)</button>
+  </div>
+</header>
+
+<div class="dashboard" id="dashboard"></div>
+
+<div class="filters">
+  <label class="fgroup">
+    <span>Busca geral</span>
+    <input type="text" id="fBuscaGeral" placeholder="Unidade, comprador, corretor, empresa ou proposta..." oninput="render()">
+  </label>
+
+  <label class="fgroup">
+    <span>Pavimento</span>
+    <select id="fAndar" onchange="render()">
+      <option value="todos">Todos os andares</option>
+    </select>
+  </label>
+
+  <label class="fgroup">
+    <span>Situação</span>
+    <select id="fStatus" onchange="render()">
+      <option value="todos">Todos os status</option>
+      <option value="disponivel">Disponível</option>
+      <option value="reservada">Reservada</option>
+      <option value="vendida">Vendida</option>
+      <option value="ec">EC</option>
+      <option value="bloqueado">Bloqueado</option>
+    </select>
+  </label>
+
+  <label class="fgroup">
+    <span>Assinatura</span>
+    <select id="fAssinado" onchange="render()">
+      <option value="todos">Todas</option>
+      <option value="sim">Assinado</option>
+      <option value="pendente">Pendente</option>
+      <option value="nao">Não assinado</option>
+    </select>
+  </label>
+
+  <label class="fgroup">
+    <span>Metragem</span>
+    <select id="fDif" onchange="render()">
+      <option value="todos">Todas as áreas</option>
+      <option value="sim">Somente diferenciadas</option>
+      <option value="nao">Somente padrão</option>
+    </select>
+  </label>
+
+  <button class="btn-clear" onclick="limparFiltros()">Limpar filtros</button>
+  <div class="result-count" id="resultCount"></div>
+</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:var(--disp)"></i> Disponível</span>
+  <span><i class="dot" style="background:var(--res)"></i> Reservada</span>
+  <span><i class="dot" style="background:var(--vend)"></i> Vendida</span>
+  <span><i class="dot" style="background:var(--ec)"></i> EC</span>
+  <span><i class="dot" style="background:var(--bloqueado)"></i> 🔒 Bloqueado</span>
+  <span><i class="dot" style="background:#fff;border:2px solid var(--dif-border)"></i> ⭐ Diferenciada</span>
+  <span>✔ <span style="color:var(--sign-ok)">Assinado</span></span>
+</div>
+
+<div class="container" id="container"></div>
+
+<footer>Gestão Tryp Congonhas — Sistema interno de controle de unidades · dados armazenados localmente neste navegador</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="mTitulo">Unidade 000</h2>
+      <span class="close-x" onclick="fecharModal()">&times;</span>
+    </div>
+    <div class="area-info" id="mArea">Área: 00,00 m²</div>
+    <div class="valor-info" id="mValorDisplay">VGV: R$ 0,00</div>
+
+    <div class="section-title">Situação da unidade</div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="mBloqueado">
+      <div>
+        <label for="mBloqueado">🔒 Unidade bloqueada (indisponível para venda)</label>
+        <small>Unidades bloqueadas não podem ser marcadas como vendidas ou reservadas</small>
+      </div>
+    </div>
+    <div class="bloqueada-warning" id="bloqueadaWarning">
+      ⚠️ Esta unidade está bloqueada. Desbloqueie antes de alterar o status para vendido/reservado.
+    </div>
+
+    <div class="row2" style="margin-top:12px;">
+      <div>
+        <label>Status</label>
+        <select id="mStatus">
+          <option value="disponivel">Disponível</option>
+          <option value="reservada">Reservada</option>
+          <option value="vendida">Vendida</option>
+          <option value="ec">EC</option>
+        </select>
+      </div>
+      <div>
+        <label>Assinatura do contrato</label>
+        <select id="mAssinado">
+          <option value="nao">Não assinado</option>
+          <option value="pendente">Pendente</option>
+          <option value="sim">Assinado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">Dados comerciais</div>
+    <label>Comprador / Cliente</label>
+    <input type="text" id="mComprador" placeholder="Nome do cliente">
+
+    <div class="row3">
+      <div>
+        <label>Corretor responsável</label>
+        <input type="text" id="mCorretor" placeholder="Nome do corretor">
+      </div>
+      <div>
+        <label>Empresa parceira</label>
+        <input type="text" id="mEmpresa" placeholder="Nome da empresa">
+      </div>
+      <div>
+        <label>Nº da proposta</label>
+        <input type="text" id="mProposta" placeholder="Ex: PROP-0045">
+      </div>
+    </div>
+
+    <label>Condições de compra</label>
+    <select id="mCondicao">
+      <option value="">Selecione...</option>
+      <option value="a_vista">À vista</option>
+      <option value="financiamento_bancario">Financiamento bancário</option>
+      <option value="parcelado_construtora">Parcelado com a construtora</option>
+      <option value="consorcio">Consórcio</option>
+      <option value="fgts">FGTS + Financiamento</option>
+      <option value="outro">Outro</option>
+    </select>
+
+    <label style="margin-top:14px;">Valor da unidade (VGV)</label>
+    <input type="text" id="mValor" placeholder="R$ 0,00" oninput="formatarMoeda(this)">
+
+    <div class="row2">
+      <div>
+        <label>Data da movimentação</label>
+        <input type="date" id="mData">
+      </div>
+      <div>
+        <label>Valor/m² (calculado)</label>
+        <input type="text" id="mValorM2" readonly style="background:#f0f4f8; color:var(--cinza-600);">
+      </div>
+    </div>
+
+    <div class="section-title">Observações</div>
+    <textarea id="mObs" placeholder="Observações adicionais..."></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-save" onclick="salvarUnidade()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DADOS ===================== */
+const STORAGE_KEY = "tryp_congonhas_unidades_v4";
+
+const areaPattern = [
+21.98,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,
+28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
+22.00,22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.28
+];
+
+function unidadePadrao(andar, pos){
+  return {
+    id: andar*100 + pos,
+    andar, pos,
+    area: areaPattern[pos-1],
+    status: "disponivel",
+    bloqueado: false,
+    assinado: "nao",
+    comprador: "",
+    corretor: "",
+    empresa: "",
+    proposta: "",
+    condicao: "",
+    valor: 0,
+    data: "",
+    obs: ""
+  };
+}
+
+function gerarDadosIniciais(){
+  const floors = [];
+  for(let andar=1; andar<=8; andar++){
+    const units = [];
+    for(let pos=1; pos<=30; pos++){
+      units.push(unidadePadrao(andar, pos));
+    }
+    floors.push({ andar, units });
+  }
+  return floors;
+}
+
+function migrarDados(dados){
+  dados.forEach(floor => {
+    floor.units.forEach(u => {
+      if(u.assinado === undefined) u.assinado = "nao";
+      if(u.empresa === undefined) u.empresa = "";
+      if(u.proposta === undefined) u.proposta = "";
+      if(u.condicao === undefined) u.condicao = "";
+      if(u.valor === undefined) u.valor = 0;
+      if(u.bloqueado === undefined) u.bloqueado = false;
+    });
+  });
+  return dados;
+}
+
+function carregarDados(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved) return migrarDados(JSON.parse(saved));
+  const dados = gerarDadosIniciais();
+  salvarLocal(dados);
+  return dados;
+}
+function salvarLocal(dados){ localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); }
+
+let floors = carregarDados();
+let unidadeSelecionada = null;
+let andaresColapsados = {};
+
+/* ===================== HELPERS ===================== */
+const todasUnidades = () => floors.flatMap(f => f.units);
+const isDiferenciada = (area) => area >= 22.00;
+const fmt = (n) => n.toFixed(2).replace(".", ",");
+const fmtMoeda = (v) => "R$ " + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const parseMoeda = (s) => parseFloat(s.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.')) || 0;
+
+const condicaoLabel = {
+  "a_vista":"À vista",
+  "financiamento_bancario":"Financiamento bancário",
+  "parcelado_construtora":"Parcelado com a construtora",
+  "consorcio":"Consórcio",
+  "fgts":"FGTS + Financiamento",
+  "outro":"Outro",
+  "":""
+};
+
+function atualizarTimestamp(){
+  const now = new Date();
+  document.getElementById("updatedAt").textContent =
+    "Atualizado em " + now.toLocaleDateString('pt-BR') + " às " + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+/* ===================== SELECT DE ANDARES ===================== */
+(function popularAndares(){
+  const sel = document.getElementById("fAndar");
+  for(let a=8; a>=1; a--){
+    const opt = document.createElement("option");
+    opt.value = a; opt.textContent = "Andar " + a;
+    sel.appendChild(opt);
+  }
+})();
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  const all = todasUnidades();
+  const total = all.length;
+  const disponiveis = all.filter(u=>u.status==="disponivel" && !u.bloqueado).length;
+  const reservadas = all.filter(u=>u.status==="reservada").length;
+  const vendidas = all.filter(u=>u.status==="vendida").length;
+  const ec = all.filter(u=>u.status==="ec").length;
+  const bloqueados = all.filter(u=>u.bloqueado).length;
+  const dif = all.filter(u=>isDiferenciada(u.area)).length;
+  const assinados = all.filter(u=>u.assinado==="sim").length;
+  
+  const vgvTotal = all.reduce((acc, u) => acc + (u.valor || 0), 0);
+  const vgvVendidas = all.filter(u=>u.status==="vendida").reduce((acc, u) => acc + (u.valor || 0), 0);
+  
+  const pct = (n) => ((n/total)*100).toFixed(1) + "%";
+
+  document.getElementById("dashboard").innerHTML = `
+    <div class="card total"><h3>${total}</h3><p>Total de unidades</p></div>
+    <div class="card disponivel"><h3>${disponiveis}</h3><p>Disponíveis</p><div class="pct">${pct(disponiveis)}</div></div>
+    <div class="card reservada"><h3>${reservadas}</h3><p>Reservadas</p><div class="pct">${pct(reservadas)}</div></div>
+    <div class="card vendida"><h3>${vendidas}</h3><p>Vendidas</p><div class="pct">${pct(vendidas)}</div></div>
+    <div class="card ec"><h3>${ec}</h3><p>EC</p><div class="pct">${pct(ec)}</div></div>
+    <div class="card bloqueado"><h3>${bloqueados}</h3><p>Bloqueados</p></div>
+    <div class="card assinado"><h3>${assinados}</h3><p>Contratos assinados</p></div>
+    <div class="card dif"><h3>${fmtMoeda(vgvTotal)}</h3><p>VGV Total</p><div class="valor-total">Vendidas: ${fmtMoeda(vgvVendidas)}</div></div>
+  `;
+}
+
+/* ===================== BUSCA GERAL ===================== */
+function matchBuscaGeral(u, termo){
+  if(!termo) return true;
+  const t = termo.toLowerCase();
+  const campos = [
+    String(u.id),
+    u.comprador || "",
+    u.corretor || "",
+    u.empresa || "",
+    u.proposta || "",
+    condicaoLabel[u.condicao] || "",
+    fmtMoeda(u.valor)
+  ];
+  return campos.some(c => c.toLowerCase().includes(t));
+}
+
+/* ===================== RENDER PRINCIPAL ===================== */
+function render(){
+  renderDashboard();
+  atualizarTimestamp();
+
+  const fAndar = document.getElementById("fAndar").value;
+  const fStatus = document.getElementById("fStatus").value;
+  const fDif = document.getElementById("fDif").value;
+  const fAssinado = document.getElementById("fAssinado").value;
+  const fBuscaGeral = document.getElementById("fBuscaGeral").value.trim();
+
+  const container = document.getElementById("container");
+  container.innerHTML = "";
+
+  const floorsOrdenados = [...floors].sort((a,b)=> b.andar - a.andar);
+  let totalVisiveis = 0;
+
+  floorsOrdenados.forEach(floor => {
+    if(fAndar !== "todos" && Number(fAndar) !== floor.andar) return;
+
+    const disp = floor.units.filter(u=>u.status==="disponivel" && !u.bloqueado).length;
+    const res = floor.units.filter(u=>u.status==="reservada").length;
+    const ven = floor.units.filter(u=>u.status==="vendida").length;
+    const ec = floor.units.filter(u=>u.status==="ec").length;
+    const bloq = floor.units.filter(u=>u.bloqueado).length;
+
+    const colapsado = !!andaresColapsados[floor.andar];
+
+    const block = document.createElement("div");
+    block.className = "floor-block";
+    block.innerHTML = `
+      <div class="floor-header ${colapsado?'collapsed':''}" onclick="toggleAndar(${floor.andar})">
+        <span>Andar ${floor.andar}</span>
+        <div class="mini-stats">
+          <span><b>${disp}</b> disp.</span>
+          <span><b>${res}</b> res.</span>
+          <span><b>${ven}</b> vend.</span>
+          <span><b>${ec}</b> EC</span>
+          ${bloq>0 ? `<span><b>${bloq}</b> 🔒</span>` : ""}
+        </div>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="floor-grid-wrapper ${colapsado?'hidden':''}" id="grid-wrap-${floor.andar}">
+        <div class="floor-grid" id="grid-${floor.andar}"></div>
+      </div>
+    `;
+    container.appendChild(block);
+
+    const grid = block.querySelector(`#grid-${floor.andar}`);
+
+    floor.units.forEach(u => {
+      const matchStatus = fStatus === "todos" || 
+                         (fStatus === "bloqueado" && u.bloqueado) ||
+                         (fStatus !== "bloqueado" && u.status === fStatus && !u.bloqueado);
+      const matchDif = fDif === "todos" ||
+                        (fDif === "sim" && isDiferenciada(u.area)) ||
+                        (fDif === "nao" && !isDiferenciada(u.area));
+      const matchAssinado = fAssinado === "todos" || u.assinado === fAssinado;
+      const matchBusca = matchBuscaGeral(u, fBuscaGeral);
+      const visivel = matchStatus && matchDif && matchAssinado && matchBusca;
+      if(visivel) totalVisiveis++;
+
+      let badges = "";
+      if(u.bloqueado) badges += '<span class="lock-icon">🔒</span>';
+      else if(u.assinado === "sim") badges += '<span class="sign-badge ok">✔</span>';
+      else if(u.assinado === "pendente") badges += '<span class="sign-badge pend">◐</span>';
+
+      const div = document.createElement("div");
+      div.className = `unit ${u.bloqueado ? 'bloqueada' : 'status-'+u.status}` + (isDiferenciada(u.area) ? " diferenciada" : "") + (visivel ? "" : " dim");
+      div.title = u.comprador ? `Comprador: ${u.comprador}${u.valor ? '\nVGV: '+fmtMoeda(u.valor) : ''}` : (u.valor ? `VGV: ${fmtMoeda(u.valor)}` : "");
+      div.innerHTML = `
+        ${badges}
+        <b>${u.id}</b>
+        <small>${fmt(u.area)} m²</small>
+        ${isDiferenciada(u.area) ? '<span class="star">⭐</span>' : ""}
+      `;
+      if(!u.bloqueado) div.onclick = () => abrirModal(u.id);
+      grid.appendChild(div);
+    });
+  });
+
+  document.getElementById("resultCount").textContent = `${totalVisiveis} unidade(s) encontrada(s)`;
+}
+
+function toggleAndar(andar){
+  andaresColapsados[andar] = !andaresColapsados[andar];
+  render();
+}
+
+/* ===================== FILTROS ===================== */
+function limparFiltros(){
+  document.getElementById("fAndar").value = "todos";
+  document.getElementById("fStatus").value = "todos";
+  document.getElementById("fDif").value = "todos";
+  document.getElementById("fAssinado").value = "todos";
+  document.getElementById("fBuscaGeral").value = "";
+  render();
+}
+
+/* ===================== MODAL ===================== */
+function formatarMoeda(input){
+  let v = parseMoeda(input.value);
+  input.value = fmtMoeda(v);
+  atualizarValorM2();
+}
+
+function atualizarValorM2(){
+  const u = unidadeSelecionada;
+  if(!u) return;
+  const valor = parseMoeda(document.getElementById("mValor").value);
+  const m2 = valor / u.area;
+  document.getElementById("mValorM2").value = fmtMoeda(m2) + " /m²";
+}
+
+function abrirModal(id){
+  const unidade = todasUnidades().find(u => u.id === id);
+  unidadeSelecionada = unidade;
+
+  document.getElementById("mTitulo").textContent = "Unidade " + unidade.id;
+  document.getElementById("mArea").textContent = "Área privativa: " + fmt(unidade.area) + " m²" + (isDiferenciada(unidade.area) ? " · ⭐ Metragem diferenciada" : "");
+  document.getElementById("mValorDisplay").textContent = "VGV: " + fmtMoeda(unidade.valor);
+  
+  document.getElementById("mBloqueado").checked = unidade.bloqueado;
+  document.getElementById("mStatus").value = unidade.status;
+  document.getElementById("mAssinado").value = unidade.assinado;
+  document.getElementById("mComprador").value = unidade.comprador;
+  document.getElementById("mCorretor").value = unidade.corretor;
+  document.getElementById("mEmpresa").value = unidade.empresa;
+  document.getElementById("mProposta").value = unidade.proposta;
+  document.getElementById("mCondicao").value = unidade.condicao;
+  document.getElementById("mValor").value = unidade.valor ? fmtMoeda(unidade.valor) : "";
+  document.getElementById("mData").value = unidade.data;
+  document.getElementById("mObs").value = unidade.obs;
+
+  atualizarValorM2();
+  verificarBloqueio();
+  
+  document.getElementById("mBloqueado").addEventListener("change", verificarBloqueio);
+  
+  document.getElementById("overlay").classList.add("active");
+}
+
+function verificarBloqueio(){
+  const bloqueado = document.getElementById("mBloqueado").checked;
+  const status = document.getElementById("mStatus").value;
+  const warning = document.getElementById("bloqueadaWarning");
+  const statusSelect = document.getElementById("mStatus");
+  
+  if(bloqueado){
+    warning.classList.add("active");
+    if(status === "vendida" || status === "reservada"){
+      statusSelect.value = "disponivel";
+    }
+    statusSelect.disabled = true;
+  } else {
+    warning.classList.remove("active");
+    statusSelect.disabled = false;
+  }
+}
+
+function fecharModal(){
+  document.getElementById("overlay").classList.remove("active");
+  unidadeSelecionada = null;
+}
+
+function salvarUnidade(){
+  if(!unidadeSelecionada) return;
+  
+  const bloqueado = document.getElementById("mBloqueado").checked;
+  const status = document.getElementById("mStatus").value;
+  
+  if(bloqueado && (status === "vendida" || status === "reservada")){
+    alert("Não é possível vender ou reservar uma unidade bloqueada. Desbloqueie primeiro ou mude o status para disponível/EC.");
+    return;
+  }
+  
+  unidadeSelecionada.bloqueado = bloqueado;
+  unidadeSelecionada.status = status;
+  unidadeSelecionada.assinado = document.getElementById("mAssinado").value;
+  unidadeSelecionada.comprador = document.getElementById("mComprador").value;
+  unidadeSelecionada.corretor = document.getElementById("mCorretor").value;
+  unidadeSelecionada.empresa = document.getElementById("mEmpresa").value;
+  unidadeSelecionada.proposta = document.getElementById("mProposta").value;
+  unidadeSelecionada.condicao = document.getElementById("mCondicao").value;
+  unidadeSelecionada.valor = parseMoeda(document.getElementById("mValor").value);
+  unidadeSelecionada.data = document.getElementById("mData").value;
+  unidadeSelecionada.obs = document.getElementById("mObs").value;
+  
+  salvarLocal(floors);
+  fecharModal();
+  render();
+}
+
+document.getElementById("overlay").addEventListener("click", (e)=>{
+  if(e.target.id === "overlay") fecharModal();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape") fecharModal();
+});
+
+/* ===================== EXPORTAR CSV ===================== */
+function exportCSV(){
+  const all = todasUnidades();
+  let csv = "Unidade;Andar;Area(m2);Status;Bloqueado;Assinatura;Comprador;Corretor;Empresa Parceira;Proposta;Condicao de Compra;VGV(R$);Data;Observacoes\n";
+  all.forEach(u => {
+    csv += `${u.id};${u.andar};${fmt(u.area)};${u.status};${u.bloqueado?'Sim':'Não'};${u.assinado};${u.comprador};${u.corretor};${u.empresa};${u.proposta};${condicaoLabel[u.condicao]||""};${u.valor.toFixed(2).replace(".",",")};${u.data};${(u.obs||"").replace(/\n/g," ")}\n`;
+  });
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "tryp_congonhas_unidades.csv";
+  link.click();
+}
+
+/* ===================== INICIALIZAÇÃO ===================== */
+render();
+</script>
+</body>
+</html>
