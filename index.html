@@ -1,8 +1,3 @@
-Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora você tem duas abas:
-1. **Mapa de Unidades** (a tela atual com as unidades coloridas)
-2. **Dashboard** (nova aba com filtros de data, métricas de vendas, VGV, ranking de corretores/empresas e gráficos simples)
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -31,76 +26,37 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:var(--cinza-texto);}
 
-  /* HEADER */
+  /* TELA DE LOGIN */
+  #tela-login{position:fixed;inset:0;background:linear-gradient(135deg,var(--azul-escuro),var(--azul-medio));display:flex;align-items:center;justify-content:center;z-index:2000;}
+  #tela-login.hidden{display:none;}
+  .login-box{background:#fff;padding:40px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.3);width:100%;max-width:380px;text-align:center;}
+  .login-box h1{margin:0 0 8px;color:var(--azul-escuro);font-size:24px;}
+  .login-box p{margin:0 0 24px;color:#777;font-size:14px;}
+  .login-box input{width:100%;padding:12px;margin-bottom:12px;border:1px solid var(--azul-borda);border-radius:6px;font-size:14px;}
+  .login-box button{width:100%;padding:12px;background:var(--azul-medio);color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;}
+  .login-box button:hover{background:#2f5a85;}
+  .login-erro{color:var(--vermelho);font-size:13px;margin-top:10px;min-height:18px;}
+
   header{background:var(--azul-escuro);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
   header h1{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;}
-  .header-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .header-info{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .usuario-logado{font-size:13px;opacity:.9;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;}
   header button{background:var(--azul-medio);color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px;}
   header button:hover{background:#2f5a85;}
+  .btn-sair{background:#c62828 !important;}
+  .btn-sair:hover{background:#a02020 !important;}
   #status-conexao{font-size:12px;opacity:.85;}
 
-  /* ABAS */
-  .abas{background:#fff;border-bottom:2px solid var(--azul-borda);padding:0 24px;display:flex;gap:4px;}
-  .aba-btn{padding:14px 24px;border:none;background:transparent;cursor:pointer;font-size:15px;font-weight:600;color:#777;border-bottom:3px solid transparent;transition:.2s;}
-  .aba-btn:hover{color:var(--azul-escuro);background:var(--azul-claro);}
-  .aba-btn.ativa{color:var(--azul-escuro);border-bottom-color:var(--azul-medio);}
-  .aba-conteudo{display:none;}
-  .aba-conteudo.ativa{display:block;}
-
-  /* LOADING */
   #overlay-loading{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;font-size:16px;color:var(--azul-escuro);gap:10px;}
   #overlay-loading.hidden{display:none;}
   .spinner{width:36px;height:36px;border:4px solid var(--azul-claro);border-top-color:var(--azul-medio);border-radius:50%;animation:girar 1s linear infinite;}
   @keyframes girar{to{transform:rotate(360deg);}}
 
-  /* DASHBOARD CARDS */
   #dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:18px 24px;}
   .card{background:#fff;border:1px solid var(--azul-borda);border-radius:8px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05);}
   .card .num{font-size:22px;font-weight:700;color:var(--azul-escuro);}
   .card .lbl{font-size:12px;color:#777;margin-top:4px;}
 
-  /* DASHBOARD ANALÍTICO */
-  #dashboard-analitico{padding:20px 24px;}
-  .filtros-dash{background:#fff;padding:16px;border-radius:8px;border:1px solid var(--azul-borda);display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:20px;}
-  .filtros-dash .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;}
-  .filtros-dash input,.filtros-dash select{padding:8px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;}
-  .filtros-dash button{padding:8px 16px;border:none;background:var(--azul-medio);color:#fff;border-radius:6px;cursor:pointer;height:36px;}
-  .filtros-dash button:hover{background:#2f5a85;}
-
-  .metricas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;}
-  .metrica-card{background:#fff;border-radius:8px;padding:18px;border:1px solid var(--azul-borda);box-shadow:0 1px 3px rgba(0,0,0,.05);}
-  .metrica-card .titulo{font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
-  .metrica-card .valor{font-size:28px;font-weight:700;color:var(--azul-escuro);}
-  .metrica-card .sub{font-size:12px;color:#999;margin-top:4px;}
-  .metrica-card.vendas .valor{color:var(--vermelho);}
-  .metrica-card.vgv .valor{color:var(--verde);}
-  .metrica-card.reservas .valor{color:var(--amarelo);}
-  .metrica-card.ticket .valor{color:var(--azul-medio);}
-
-  .secao-dash{background:#fff;border-radius:8px;padding:18px;border:1px solid var(--azul-borda);margin-bottom:20px;}
-  .secao-dash h3{margin:0 0 16px 0;color:var(--azul-escuro);font-size:16px;display:flex;align-items:center;gap:8px;}
-
-  /* BARRAS SIMPLES */
-  .barra-container{margin-bottom:10px;}
-  .barra-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
-  .barra-label span:last-child{font-weight:600;}
-  .barra-fundo{height:24px;background:#f0f0f0;border-radius:4px;overflow:hidden;}
-  .barra-preenchimento{height:100%;border-radius:4px;transition:width .5s;}
-
-  /* TABELAS RANKING */
-  table.ranking{width:100%;border-collapse:collapse;font-size:13px;}
-  table.ranking th{text-align:left;padding:10px;background:var(--azul-claro);color:var(--azul-escuro);font-weight:600;}
-  table.ranking td{padding:10px;border-bottom:1px solid #eee;}
-  table.ranking tr:hover{background:#f9fbfd;}
-  .posicao{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:var(--azul-claro);color:var(--azul-escuro);font-weight:700;font-size:12px;}
-  .posicao.top1{background:var(--dourado);color:#fff;}
-  .posicao.top2{background:#c0c0c0;color:#fff;}
-  .posicao.top3{background:#cd7f32;color:#fff;}
-
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-  @media(max-width:768px){.grid-2{grid-template-columns:1fr;}}
-
-  /* FILTROS (aba mapa) */
   #filtros{background:#fff;margin:0 24px 18px;padding:14px;border-radius:8px;border:1px solid var(--azul-borda);display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
   #filtros .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;}
   #filtros input,#filtros select{padding:8px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;min-width:140px;}
@@ -116,10 +72,10 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
   .andar-header{background:var(--azul-claro);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;flex-wrap:wrap;gap:8px;}
   .andar-header h2{margin:0;font-size:16px;color:var(--azul-escuro);}
   .andar-stats{font-size:12px;color:#555;display:flex;gap:10px;flex-wrap:wrap;}
-  .andar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;padding:14px;}
+  .andar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;padding:14px;}
   .andar-grid.collapsed{display:none;}
 
-  .unit{position:relative;border:2px solid;border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;font-size:11px;transition:.15s;background:#fff;}
+  .unit{position:relative;border:2px solid;border-radius:6px;padding:8px 4px 4px;text-align:center;cursor:pointer;font-size:11px;transition:.15s;background:#fff;}
   .unit:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.12);}
   .unit.disponivel{background:var(--verde-fundo);border-color:var(--verde);}
   .unit.reservada{background:var(--amarelo-fundo);border-color:var(--amarelo);}
@@ -127,12 +83,12 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
   .unit.permuta{background:var(--roxo-fundo);border-color:var(--roxo);}
   .unit.bloqueado{background:var(--cinza-fundo) !important;}
   .unit.diferenciada{box-shadow:inset 0 0 0 2px var(--dourado);}
-  .unit .num{font-weight:700;color:var(--azul-escuro);}
+  .unit .num{font-weight:700;color:var(--azul-escuro);font-size:12px;}
   .unit .area{color:#777;font-size:10px;}
+  .unit .atualizado-por{font-size:8px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .unit .icones{position:absolute;top:2px;right:3px;font-size:10px;}
   .unit[hidden]{display:none;}
 
-  /* MODAL */
   .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
   .modal-overlay.hidden{display:none;}
   .modal{background:#fff;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;position:relative;}
@@ -148,36 +104,39 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
   .btn-cancelar{background:#e0e0e0;}
   .btn-salvar{background:var(--azul-medio);color:#fff;}
   .fechar-x{position:absolute;top:14px;right:18px;cursor:pointer;font-size:18px;color:#888;}
-
-  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
-  .badge-vendida{background:var(--vermelho-fundo);color:var(--vermelho);}
-  .badge-reservada{background:var(--amarelo-fundo);color:#b8860b;}
-  .badge-permuta{background:var(--roxo-fundo);color:var(--roxo);}
+  .info-auditoria{background:var(--azul-claro);padding:10px;border-radius:6px;font-size:12px;color:#555;margin-bottom:14px;}
 </style>
 </head>
 <body>
 
-<div id="overlay-loading">
+<!-- TELA DE LOGIN -->
+<div id="tela-login">
+  <div class="login-box">
+    <h1>🏢 Gestão Tryp Congonhas</h1>
+    <p>Faça login para acessar o sistema</p>
+    <input type="email" id="login-email" placeholder="Seu e-mail" autocomplete="username">
+    <input type="password" id="login-senha" placeholder="Sua senha" autocomplete="current-password">
+    <button onclick="fazerLogin()">Entrar</button>
+    <div class="login-erro" id="login-erro"></div>
+  </div>
+</div>
+
+<div id="overlay-loading" class="hidden">
   <div class="spinner"></div>
   <div>Conectando ao banco de dados...</div>
 </div>
 
-<header>
-  <h1>🏢 Gestão Tryp Congonhas</h1>
-  <div class="header-actions">
-    <span id="status-conexao">🔄 Sincronizado</span>
-    <button onclick="exportarCSV()">⬇ Exportar relatório (CSV)</button>
-  </div>
-</header>
+<div id="conteudo-principal" style="display:none;">
+  <header>
+    <h1>🏢 Gestão Tryp Congonhas</h1>
+    <div class="header-info">
+      <span id="status-conexao">🔄 Sincronizado</span>
+      <span class="usuario-logado" id="usuario-logado">👤 </span>
+      <button onclick="exportarCSV()">⬇ Exportar CSV</button>
+      <button class="btn-sair" onclick="fazerLogout()">🚪 Sair</button>
+    </div>
+  </header>
 
-<!-- ABAS -->
-<div class="abas">
-  <button class="aba-btn ativa" id="btn-aba-mapa" onclick="trocarAba('mapa')">🗺️ Mapa de Unidades</button>
-  <button class="aba-btn" id="btn-aba-dashboard" onclick="trocarAba('dashboard')">📊 Dashboard</button>
-</div>
-
-<!-- ABA MAPA DE UNIDADES -->
-<div id="aba-mapa" class="aba-conteudo ativa">
   <div id="dashboard"></div>
 
   <div id="filtros">
@@ -236,118 +195,12 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
   <div id="andares"></div>
 </div>
 
-<!-- ABA DASHBOARD -->
-<div id="aba-dashboard" class="aba-conteudo">
-  <div id="dashboard-analitico">
-    <div class="filtros-dash">
-      <div class="campo">
-        <label>📅 Data início</label>
-        <input type="date" id="dash-data-inicio">
-      </div>
-      <div class="campo">
-        <label>📅 Data fim</label>
-        <input type="date" id="dash-data-fim">
-      </div>
-      <div class="campo">
-        <label>Pavimento</label>
-        <select id="dash-andar">
-          <option value="">Todos</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Status</label>
-        <select id="dash-status">
-          <option value="">Todos</option>
-          <option value="vendida">Vendida</option>
-          <option value="reservada">Reservada</option>
-          <option value="permuta">Permuta</option>
-        </select>
-      </div>
-      <button onclick="atualizarDashboard()">🔍 Filtrar</button>
-      <button onclick="limparFiltrosDash()" style="background:#888;">Limpar</button>
-    </div>
-
-    <div class="metricas-grid">
-      <div class="metrica-card vendas">
-        <div class="titulo">Vendas no período</div>
-        <div class="valor" id="met-vendas">0</div>
-        <div class="sub" id="met-vendas-sub">unidades vendidas</div>
-      </div>
-      <div class="metrica-card vgv">
-        <div class="titulo">VGV Período</div>
-        <div class="valor" id="met-vgv">R$ 0</div>
-        <div class="sub" id="met-vgv-sub">valor total das vendas</div>
-      </div>
-      <div class="metrica-card ticket">
-        <div class="titulo">Ticket Médio</div>
-        <div class="valor" id="met-ticket">R$ 0</div>
-        <div class="sub">valor médio por unidade</div>
-      </div>
-      <div class="metrica-card reservas">
-        <div class="titulo">Reservas</div>
-        <div class="valor" id="met-reservas">0</div>
-        <div class="sub">unidades reservadas no período</div>
-      </div>
-      <div class="metrica-card">
-        <div class="titulo">Taxa de Assinatura</div>
-        <div class="valor" id="met-assinatura">0%</div>
-        <div class="sub">das vendas estão assinadas</div>
-      </div>
-      <div class="metrica-card">
-        <div class="titulo">Valor/m² Médio</div>
-        <div class="valor" id="met-valorm2">R$ 0</div>
-        <div class="sub">média do período</div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="secao-dash">
-        <h3>🏆 Top 5 Corretores (VGV)</h3>
-        <table class="ranking" id="ranking-corretores">
-          <thead><tr><th>#</th><th>Corretor</th><th>Vendas</th><th>VGV</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="secao-dash">
-        <h3>🏢 Top 5 Empresas Parceiras</h3>
-        <table class="ranking" id="ranking-empresas">
-          <thead><tr><th>#</th><th>Empresa</th><th>Vendas</th><th>VGV</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="secao-dash">
-      <h3>📊 Vendas por Andar</h3>
-      <div id="vendas-por-andar"></div>
-    </div>
-
-    <div class="grid-2">
-      <div class="secao-dash">
-        <h3>💳 Vendas por Condição de Pagamento</h3>
-        <div id="vendas-por-condicao"></div>
-      </div>
-      <div class="secao-dash">
-        <h3>📈 Evolução de Vendas (últimos 6 meses)</h3>
-        <div id="evolucao-vendas"></div>
-      </div>
-    </div>
-
-    <div class="secao-dash">
-      <h3>🕐 Últimas Movimentações</h3>
-      <table class="ranking" id="ultimas-movimentacoes">
-        <thead><tr><th>Data</th><th>Unidade</th><th>Status</th><th>Comprador</th><th>Corretor</th><th>VGV</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL -->
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
     <span class="fechar-x" onclick="fecharModal()">✖</span>
     <h2 id="modal-titulo">Unidade</h2>
+
+    <div id="info-auditoria" class="info-auditoria oculto"></div>
 
     <div id="modal-aviso" class="aviso-bloqueio oculto">
       ⚠ Esta unidade está bloqueada. Não é possível marcar como Vendida ou Reservada enquanto o bloqueio estiver ativo.
@@ -432,6 +285,7 @@ Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora voc
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
 /* ===================== CONFIG FIREBASE ===================== */
@@ -447,11 +301,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
 const unidadesRef = db.ref('unidades');
 
 /* ===================== DADOS BASE ===================== */
 const AREAS = [21.98,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,
-               28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
+               28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
                22.00,22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.28];
 
 const STATUS_LABELS = {disponivel:'Disponível',reservada:'Reservada',vendida:'Vendida',permuta:'Permuta'};
@@ -463,6 +318,61 @@ let unidades = {};
 let unidadeSelecionadaId = null;
 let andaresColapsados = {};
 
+/* ===================== AUTENTICAÇÃO ===================== */
+auth.onAuthStateChanged(user => {
+  if(user){
+    // Usuário logado
+    document.getElementById('tela-login').classList.add('hidden');
+    document.getElementById('conteudo-principal').style.display = 'block';
+    document.getElementById('usuario-logado').textContent = '👤 ' + user.email;
+    document.getElementById('overlay-loading').classList.remove('hidden');
+    carregarDados();
+  } else {
+    // Usuário deslogado
+    document.getElementById('tela-login').classList.remove('hidden');
+    document.getElementById('conteudo-principal').style.display = 'none';
+    document.getElementById('overlay-loading').classList.add('hidden');
+  }
+});
+
+function fazerLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const erroDiv = document.getElementById('login-erro');
+
+  if(!email || !senha){
+    erroDiv.textContent = 'Preencha e-mail e senha';
+    return;
+  }
+
+  erroDiv.textContent = 'Entrando...';
+  auth.signInWithEmailAndPassword(email, senha)
+    .then(() => {
+      erroDiv.textContent = '';
+    })
+    .catch(err => {
+      let msg = 'Erro ao fazer login';
+      if(err.code === 'auth/user-not-found') msg = 'Usuário não encontrado';
+      else if(err.code === 'auth/wrong-password') msg = 'Senha incorreta';
+      else if(err.code === 'auth/invalid-email') msg = 'E-mail inválido';
+      erroDiv.textContent = msg;
+    });
+}
+
+function fazerLogout(){
+  if(confirm('Deseja realmente sair?')){
+    auth.signOut();
+  }
+}
+
+// Permitir login com Enter
+document.getElementById('login-senha').addEventListener('keypress', e => {
+  if(e.key === 'Enter') fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keypress', e => {
+  if(e.key === 'Enter') fazerLogin();
+});
+
 function gerarUnidadesPadrao(){
   const obj = {};
   for(let andar=1; andar<=8; andar++){
@@ -472,279 +382,32 @@ function gerarUnidadesPadrao(){
         id, andar, pos, area: AREAS[pos-1],
         status:"disponivel", bloqueado:false, motivoBloqueio:"",
         assinado:"nao", comprador:"", corretor:"", empresa:"",
-        condicao:"", valor:0, data:"", obs:""
+        condicao:"", valor:0, data:"", obs:"",
+        atualizadoPor:"", atualizadoEm:""
       };
     }
   }
   return obj;
 }
 
-/* ===================== TROCAR ABA ===================== */
-function trocarAba(aba){
-  document.querySelectorAll('.aba-btn').forEach(b=>b.classList.remove('ativa'));
-  document.querySelectorAll('.aba-conteudo').forEach(c=>c.classList.remove('ativa'));
-
-  if(aba==='mapa'){
-    document.getElementById('btn-aba-mapa').classList.add('ativa');
-    document.getElementById('aba-mapa').classList.add('ativa');
-  } else {
-    document.getElementById('btn-aba-dashboard').classList.add('ativa');
-    document.getElementById('aba-dashboard').classList.add('ativa');
-    preencherSelectAndarDash();
-    atualizarDashboard();
-  }
-}
-
-/* ===================== CONEXÃO FIREBASE ===================== */
-unidadesRef.on('value', snapshot => {
-  const dados = snapshot.val();
-  if(!dados){
-    const padrao = gerarUnidadesPadrao();
-    unidadesRef.set(padrao);
-    unidades = padrao;
-  } else {
-    unidades = dados;
-  }
-  document.getElementById('overlay-loading').classList.add('hidden');
-  document.getElementById('status-conexao').textContent = '🔄 Sincronizado';
-
-  // Se dashboard estiver ativo, atualiza
-  if(document.getElementById('aba-dashboard').classList.contains('ativa')){
-    atualizarDashboard();
-  } else {
-    renderizarTudo();
-  }
-}, err => {
-  document.getElementById('status-conexao').textContent = '⚠ Erro de conexão';
-});
-
-/* ===================== DASHBOARD ANALÍTICO ===================== */
-function preencherSelectAndarDash(){
-  const sel = document.getElementById('dash-andar');
-  if(sel.options.length>1) return;
-  for(let a=1;a<=8;a++){
-    const op = document.createElement('option');
-    op.value=a; op.textContent=a+'º Andar';
-    sel.appendChild(op);
-  }
-}
-
-function filtrarUnidadesDash(){
-  const dataInicio = document.getElementById('dash-data-inicio').value;
-  const dataFim = document.getElementById('dash-data-fim').value;
-  const andar = document.getElementById('dash-andar').value;
-  const status = document.getElementById('dash-status').value;
-
-  let lista = Object.values(unidades).filter(u => {
-    // Filtro por data (só considera unidades que tenham data preenchida e mudaram de status)
-    if(dataInicio && u.data && u.data < dataInicio) return false;
-    if(dataFim && u.data && u.data > dataFim) return false;
-    // Se tem filtro de data mas unidade não tem data, exclui (a menos que seja status atual sem data específica)
-    if((dataInicio || dataFim) && !u.data && u.status === 'disponivel') return false;
-
-    if(andar && String(u.andar) !== andar) return false;
-    if(status && u.status !== status) return false;
-
-    return true;
-  });
-
-  return lista;
-}
-
-function atualizarDashboard(){
-  const lista = filtrarUnidadesDash();
-
-  // Métricas principais
-  const vendas = lista.filter(u => u.status === 'vendida');
-  const reservas = lista.filter(u => u.status === 'reservada');
-  const vgvTotal = vendas.reduce((s,u) => s + (u.valor || 0), 0);
-  const ticketMedio = vendas.length > 0 ? vgvTotal / vendas.length : 0;
-  const assinadas = vendas.filter(u => u.assinado === 'sim').length;
-  const taxaAssinatura = vendas.length > 0 ? (assinadas / vendas.length * 100) : 0;
-  const valorM2Medio = vendas.length > 0 ? vendas.reduce((s,u) => s + ((u.valor||0)/u.area), 0) / vendas.length : 0;
-
-  document.getElementById('met-vendas').textContent = vendas.length;
-  document.getElementById('met-vendas-sub').textContent = `unidades vendidas`;
-  document.getElementById('met-vgv').textContent = formatarMoeda(vgvTotal);
-  document.getElementById('met-vgv-sub').textContent = `${vendas.length} vendas`;
-  document.getElementById('met-ticket').textContent = formatarMoeda(ticketMedio);
-  document.getElementById('met-reservas').textContent = reservas.length;
-  document.getElementById('met-assinatura').textContent = taxaAssinatura.toFixed(0) + '%';
-  document.getElementById('met-valorm2').textContent = formatarMoeda(valorM2Medio);
-
-  // Ranking Corretores
-  const corretores = {};
-  vendas.forEach(u => {
-    const nome = u.corretor || 'Não informado';
-    if(!corretores[nome]) corretores[nome] = {vendas:0, vgv:0};
-    corretores[nome].vendas++;
-    corretores[nome].vgv += (u.valor || 0);
-  });
-  const topCorretores = Object.entries(corretores)
-    .sort((a,b) => b[1].vgv - a[1].vgv)
-    .slice(0,5);
-
-  let htmlCorretores = '';
-  topCorretores.forEach(([nome, dados], i) => {
-    const posClass = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
-    htmlCorretores += `<tr>
-      <td><span class="posicao ${posClass}">${i+1}</span></td>
-      <td>${nome}</td>
-      <td>${dados.vendas}</td>
-      <td>${formatarMoeda(dados.vgv)}</td>
-    </tr>`;
-  });
-  document.querySelector('#ranking-corretores tbody').innerHTML = htmlCorretores || '<tr><td colspan="4" style="text-align:center;color:#999;">Nenhuma venda no período</td></tr>';
-
-  // Ranking Empresas
-  const empresas = {};
-  vendas.forEach(u => {
-    const nome = u.empresa || 'Não informado';
-    if(!empresas[nome]) empresas[nome] = {vendas:0, vgv:0};
-    empresas[nome].vendas++;
-    empresas[nome].vgv += (u.valor || 0);
-  });
-  const topEmpresas = Object.entries(empresas)
-    .sort((a,b) => b[1].vgv - a[1].vgv)
-    .slice(0,5);
-
-  let htmlEmpresas = '';
-  topEmpresas.forEach(([nome, dados], i) => {
-    const posClass = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
-    htmlEmpresas += `<tr>
-      <td><span class="posicao ${posClass}">${i+1}</span></td>
-      <td>${nome}</td>
-      <td>${dados.vendas}</td>
-      <td>${formatarMoeda(dados.vgv)}</td>
-    </tr>`;
-  });
-  document.querySelector('#ranking-empresas tbody').innerHTML = htmlEmpresas || '<tr><td colspan="4" style="text-align:center;color:#999;">Nenhuma venda no período</td></tr>';
-
-  // Vendas por Andar (barras)
-  const porAndar = {};
-  for(let a=1;a<=8;a++) porAndar[a] = {vendas:0, vgv:0};
-  vendas.forEach(u => {
-    porAndar[u.andar].vendas++;
-    porAndar[u.andar].vgv += (u.valor || 0);
-  });
-  const maxVendasAndar = Math.max(...Object.values(porAndar).map(v => v.vendas), 1);
-
-  let htmlAndar = '';
-  for(let a=1;a<=8;a++){
-    const dados = porAndar[a];
-    const pct = (dados.vendas / maxVendasAndar * 100);
-    htmlAndar += `
-      <div class="barra-container">
-        <div class="barra-label">
-          <span>${a}º Andar</span>
-          <span>${dados.vendas} vendas | ${formatarMoeda(dados.vgv)}</span>
-        </div>
-        <div class="barra-fundo">
-          <div class="barra-preenchimento" style="width:${pct}%;background:var(--azul-medio);"></div>
-        </div>
-      </div>
-    `;
-  }
-  document.getElementById('vendas-por-andar').innerHTML = htmlAndar;
-
-  // Vendas por Condição
-  const porCondicao = {a_vista:0, financiamento_bancario:0, parcelado_construtora:0, '':0};
-  vendas.forEach(u => {
-    const key = u.condicao || '';
-    porCondicao[key] = (porCondicao[key] || 0) + 1;
-  });
-  const maxCondicao = Math.max(...Object.values(porCondicao), 1);
-
-  let htmlCondicao = '';
-  Object.entries(porCondicao).forEach(([key, qtd]) => {
-    if(qtd===0) return;
-    const label = CONDICAO_LABELS[key] || 'Não informado';
-    const pct = (qtd / maxCondicao * 100);
-    const cor = key==='a_vista'?'var(--verde)':(key==='financiamento_bancario'?'var(--azul-medio)':'var(--roxo)');
-    htmlCondicao += `
-      <div class="barra-container">
-        <div class="barra-label">
-          <span>${label}</span>
-          <span>${qtd} vendas</span>
-        </div>
-        <div class="barra-fundo">
-          <div class="barra-preenchimento" style="width:${pct}%;background:${cor};"></div>
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('vendas-por-condicao').innerHTML = htmlCondicao || '<p style="color:#999;text-align:center;">Nenhuma venda no período</p>';
-
-  // Evolução últimos 6 meses
-  const hoje = new Date();
-  const meses = [];
-  for(let i=5;i>=0;i--){
-    const d = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
-    meses.push({mes: d.getMonth(), ano: d.getFullYear(), label: d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})});
-  }
-
-  const vendasPorMes = {};
-  meses.forEach(m => vendasPorMes[`${m.ano}-${m.mes}`] = 0);
-  vendas.forEach(u => {
-    if(u.data){
-      const d = new Date(u.data + 'T00:00:00');
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      if(vendasPorMes[key] !== undefined) vendasPorMes[key]++;
+/* ===================== CARREGAR DADOS ===================== */
+function carregarDados(){
+  unidadesRef.on('value', snapshot => {
+    const dados = snapshot.val();
+    if(!dados){
+      const padrao = gerarUnidadesPadrao();
+      unidadesRef.set(padrao);
+      unidades = padrao;
+    } else {
+      unidades = dados;
     }
+    document.getElementById('overlay-loading').classList.add('hidden');
+    document.getElementById('status-conexao').textContent = '🔄 Sincronizado';
+    renderizarTudo();
+  }, err => {
+    document.getElementById('status-conexao').textContent = '⚠ Erro de conexão';
+    alert('Não foi possível conectar ao banco de dados.');
   });
-
-  const maxMes = Math.max(...Object.values(vendasPorMes), 1);
-  let htmlEvolucao = '';
-  meses.forEach(m => {
-    const qtd = vendasPorMes[`${m.ano}-${m.mes}`] || 0;
-    const pct = (qtd / maxMes * 100);
-    htmlEvolucao += `
-      <div class="barra-container">
-        <div class="barra-label">
-          <span>${m.label}</span>
-          <span>${qtd}</span>
-        </div>
-        <div class="barra-fundo">
-          <div class="barra-preenchimento" style="width:${pct}%;background:var(--vermelho);"></div>
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('evolucao-vendas').innerHTML = htmlEvolucao;
-
-  // Últimas Movimentações
-  const movimentacoes = Object.values(unidades)
-    .filter(u => u.data && u.status !== 'disponivel')
-    .sort((a,b) => (b.data || '').localeCompare(a.data || ''))
-    .slice(0, 10);
-
-  let htmlMov = '';
-  movimentacoes.forEach(u => {
-    const badgeClass = u.status==='vendida'?'badge-vendida':(u.status==='reservada'?'badge-reservada':'badge-permuta');
-    htmlMov += `<tr>
-      <td>${formatarDataBR(u.data)}</td>
-      <td><strong>${u.id}</strong></td>
-      <td><span class="badge ${badgeClass}">${STATUS_LABELS[u.status]}</span></td>
-      <td>${u.comprador || '-'}</td>
-      <td>${u.corretor || '-'}</td>
-      <td>${formatarMoeda(u.valor || 0)}</td>
-    </tr>`;
-  });
-  document.querySelector('#ultimas-movimentacoes tbody').innerHTML = htmlMov || '<tr><td colspan="6" style="text-align:center;color:#999;">Nenhuma movimentação registrada</td></tr>';
-}
-
-function limparFiltrosDash(){
-  document.getElementById('dash-data-inicio').value = '';
-  document.getElementById('dash-data-fim').value = '';
-  document.getElementById('dash-andar').value = '';
-  document.getElementById('dash-status').value = '';
-  atualizarDashboard();
-}
-
-function formatarDataBR(data){
-  if(!data) return '-';
-  const [ano, mes, dia] = data.split('-');
-  return `${dia}/${mes}/${ano}`;
 }
 
 /* ===================== FORMATAÇÃO DE MOEDA ===================== */
@@ -770,7 +433,13 @@ function atualizarValorM2(){
   document.getElementById('m-valorm2').value = formatarMoeda(m2);
 }
 
-/* ===================== RENDER MAPA ===================== */
+function formatarDataHora(dataISO){
+  if(!dataISO) return '';
+  const d = new Date(dataISO);
+  return d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+/* ===================== RENDER ===================== */
 function renderizarTudo(){
   preencherSelectAndar();
   renderizarDashboard();
@@ -874,12 +543,21 @@ function renderizarAndares(){
       const div = document.createElement('div');
       div.className = `unit ${u.status} ${u.bloqueado?'bloqueado':''} ${u.area>=22?'diferenciada':''}`;
       if(!visivel) div.setAttribute('hidden','');
+
+      // Info de quem atualizou
+      let infoAtualizador = '';
+      if(u.atualizadoPor){
+        const nomeCurto = u.atualizadoPor.split('@')[0];
+        infoAtualizador = `<div class="atualizado-por" title="Atualizado por ${u.atualizadoPor} em ${formatarDataHora(u.atualizadoEm)}">✏️ ${nomeCurto}</div>`;
+      }
+
       div.onclick = () => abrirModal(u.id);
-      div.title = `${u.comprador?('Comprador: '+u.comprador+'\\n'):''}${u.valor?('VGV: '+formatarMoeda(u.valor)+'\\n'):''}${u.bloqueado?('Bloqueio: '+MOTIVO_LABELS[u.motivoBloqueio]):''}`;
+      div.title = `${u.comprador?('Comprador: '+u.comprador+'\\n'):''}${u.valor?('VGV: '+formatarMoeda(u.valor)+'\\n'):''}${u.bloqueado?('Bloqueio: '+MOTIVO_LABELS[u.motivoBloqueio]):''}${u.atualizadoPor?('\\nÚltima atualização: '+u.atualizadoPor):''}`;
       div.innerHTML = `
         <div class="icones">${u.bloqueado?'🔒':''}${u.assinado==='sim'?'✔':(u.assinado==='pendente'?'◐':'')}${u.area>=22?'⭐':''}</div>
         <div class="num">${u.id}</div>
         <div class="area">${u.area.toFixed(2)}m²</div>
+        ${infoAtualizador}
       `;
       grid.appendChild(div);
     });
@@ -901,12 +579,13 @@ function limparFiltros(){
   document.getElementById('f-metragem').value='';
   renderizarAndares();
 }
-
-/* ===================== EVENTOS FILTROS ===================== */
 ['f-busca','f-andar','f-status','f-assinatura','f-metragem'].forEach(id=>{
   document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById(id).addEventListener('input', renderizarAndares);
-    document.getElementById(id).addEventListener('change', renderizarAndares);
+    const el = document.getElementById(id);
+    if(el){
+      el.addEventListener('input', renderizarAndares);
+      el.addEventListener('change', renderizarAndares);
+    }
   });
 });
 
@@ -915,6 +594,16 @@ function abrirModal(id){
   unidadeSelecionadaId = id;
   const u = unidades[id];
   document.getElementById('modal-titulo').textContent = `Unidade ${u.id} — ${u.area.toFixed(2)}m²`;
+
+  // Mostrar info de auditoria
+  const infoAuditoria = document.getElementById('info-auditoria');
+  if(u.atualizadoPor){
+    infoAuditoria.innerHTML = `👤 Última atualização por <strong>${u.atualizadoPor}</strong> em ${formatarDataHora(u.atualizadoEm)}`;
+    infoAuditoria.classList.remove('oculto');
+  } else {
+    infoAuditoria.classList.add('oculto');
+  }
+
   document.getElementById('m-bloqueado').checked = !!u.bloqueado;
   document.getElementById('m-motivo').value = u.motivoBloqueio || 'permuta';
   document.getElementById('m-status').value = u.status;
@@ -943,9 +632,12 @@ function fecharModal(){
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') fecharModal(); });
 document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('modal-overlay').addEventListener('click', e=>{
-    if(e.target.id==='modal-overlay') fecharModal();
-  });
+  const overlay = document.getElementById('modal-overlay');
+  if(overlay){
+    overlay.addEventListener('click', e=>{
+      if(e.target.id==='modal-overlay') fecharModal();
+    });
+  }
 });
 
 function salvarUnidade(){
@@ -957,6 +649,9 @@ function salvarUnidade(){
     alert('Esta unidade está bloqueada. Desmarque o bloqueio antes de marcar como Vendida ou Reservada.');
     return;
   }
+
+  const user = auth.currentUser;
+  const agora = new Date().toISOString();
 
   const atualizado = {
     id, andar: unidades[id].andar, pos: unidades[id].pos, area: unidades[id].area,
@@ -970,7 +665,9 @@ function salvarUnidade(){
     condicao: document.getElementById('m-condicao').value,
     valor: getValorNumerico(document.getElementById('m-valor')),
     data: document.getElementById('m-data').value,
-    obs: document.getElementById('m-obs').value.trim()
+    obs: document.getElementById('m-obs').value.trim(),
+    atualizadoPor: user ? user.email : 'desconhecido',
+    atualizadoEm: agora
   };
 
   unidades[id] = atualizado;
@@ -985,7 +682,7 @@ function salvarUnidade(){
 
 /* ===================== EXPORTAR CSV ===================== */
 function exportarCSV(){
-  const linhas = [['Unidade','Andar','Area(m2)','Status','Bloqueado','Motivo Bloqueio','Assinatura','Comprador','Corretor','Empresa Parceira','Condicao de Compra','VGV(R$)','Data','Observacoes']];
+  const linhas = [['Unidade','Andar','Area(m2)','Status','Bloqueado','Motivo Bloqueio','Assinatura','Comprador','Corretor','Empresa Parceira','Condicao de Compra','VGV(R$)','Data','Observacoes','Atualizado Por','Atualizado Em']];
   Object.values(unidades).sort((a,b)=>a.id-b.id).forEach(u=>{
     linhas.push([
       u.id, u.andar, u.area.toFixed(2),
@@ -996,7 +693,8 @@ function exportarCSV(){
       u.comprador||'', u.corretor||'', u.empresa||'',
       CONDICAO_LABELS[u.condicao]||'',
       (u.valor||0).toFixed(2).replace('.',','),
-      u.data||'', (u.obs||'').replace(/;/g,',')
+      u.data||'', (u.obs||'').replace(/;/g,','),
+      u.atualizadoPor||'', formatarDataHora(u.atualizadoEm)||''
     ]);
   });
   const csv = linhas.map(l=>l.join(';')).join('\n');
@@ -1010,20 +708,3 @@ function exportarCSV(){
 </script>
 </body>
 </html>
-```
-
-## O que foi adicionado:
-
-**📊 Nova Aba Dashboard** com:
-- **Filtros de data** (início e fim) + filtro por andar e status
-- **6 cards de métricas**: Vendas no período, VGV, Ticket Médio, Reservas, Taxa de Assinatura, Valor/m² médio
-- **Top 5 Corretores** por VGV (com medalhas 🥇🥈🥉)
-- **Top 5 Empresas Parceiras** por VGV
-- **Gráfico de barras**: Vendas por andar (1º ao 8º)
-- **Gráfico de barras**: Vendas por condição de pagamento (à vista, financiamento, parcelado)
-- **Evolução mensal**: Vendas nos últimos 6 meses
-- **Tabela das últimas movimentações**: Data, unidade, status, comprador, corretor, VGV
-
-**🗺️ Aba Mapa de Unidades** continua igual (com as cores que você aprovou: verde, amarelo, vermelho, roxo, cinza).
-
-Tudo continua sincronizado via Firebase em tempo real! Só colar no GitHub e commit. 🚀
