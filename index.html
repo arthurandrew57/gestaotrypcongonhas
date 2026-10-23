@@ -1,3 +1,8 @@
+Aqui está o código completo com a **nova aba Dashboard** adicionada. Agora você tem duas abas:
+1. **Mapa de Unidades** (a tela atual com as unidades coloridas)
+2. **Dashboard** (nova aba com filtros de data, métricas de vendas, VGV, ranking de corretores/empresas e gráficos simples)
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1005,3 +1010,20 @@ function exportarCSV(){
 </script>
 </body>
 </html>
+```
+
+## O que foi adicionado:
+
+**📊 Nova Aba Dashboard** com:
+- **Filtros de data** (início e fim) + filtro por andar e status
+- **6 cards de métricas**: Vendas no período, VGV, Ticket Médio, Reservas, Taxa de Assinatura, Valor/m² médio
+- **Top 5 Corretores** por VGV (com medalhas 🥇🥈🥉)
+- **Top 5 Empresas Parceiras** por VGV
+- **Gráfico de barras**: Vendas por andar (1º ao 8º)
+- **Gráfico de barras**: Vendas por condição de pagamento (à vista, financiamento, parcelado)
+- **Evolução mensal**: Vendas nos últimos 6 meses
+- **Tabela das últimas movimentações**: Data, unidade, status, comprador, corretor, VGV
+
+**🗺️ Aba Mapa de Unidades** continua igual (com as cores que você aprovou: verde, amarelo, vermelho, roxo, cinza).
+
+Tudo continua sincronizado via Firebase em tempo real! Só colar no GitHub e commit. 🚀
