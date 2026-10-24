@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão Tryp Congonhas</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="styles.css">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -243,6 +243,19 @@ const auth = firebase.auth();
 const database = firebase.database();
 const unidadesRef = database.ref('unidades');
 
+/* ===== CONTROLE DE PERMISSÃO DE ABA =====
+   E-mails listados aqui NÃO enxergam a aba "Dashboard".
+   Troque "EMAIL_SEM_DASHBOARD_AQUI" pelo e-mail real do(s) usuário(s)
+   restrito(s). Pode adicionar quantos e-mails quiser na lista, separados por vírgula. */
+const USUARIOS_SEM_DASHBOARD = [
+  'EMAIL_SEM_DASHBOARD_AQUI@tryp.com'
+];
+
+function usuarioPodeVerDashboard(email){
+  if(!email) return false;
+  return !USUARIOS_SEM_DASHBOARD.map(e=>e.toLowerCase()).includes(email.toLowerCase());
+}
+
 /* ===== ÍCONES SVG (sem emoji) ===== */
 const ICON_LOCK = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const ICON_STAR = '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>';
@@ -284,10 +297,7 @@ function gerarUnidadesPadrao(){
   return unidades;
 }
 
-/* ===== CORREÇÃO AUTOMÁTICA DE ÁREAS (não apaga nenhum outro dado) =====
-   Corrige apenas o campo "area" de cada unidade existente no banco,
-   caso tenha sido salvo com um valor desatualizado. Preserva status,
-   comprador, VGV, auditoria etc. Roda sozinha, sem necessidade de botão. */
+/* ===== CORREÇÃO AUTOMÁTICA DE ÁREAS (não apaga nenhum outro dado) ===== */
 function corrigirAreasExistentes(dados){
   const atualizacoes = {};
   let precisaCorrigir = false;
@@ -478,8 +488,11 @@ function toggleAndar(andar){
   seta.classList.toggle('colapsada');
 }
 
-/* ===== ABAS ===== */
+/* ===== ABAS (com verificação de permissão) ===== */
 function trocarAba(aba){
+  if(aba === 'dashboard' && auth.currentUser && !usuarioPodeVerDashboard(auth.currentUser.email)){
+    aba = 'mapa';
+  }
   document.querySelectorAll('.aba-conteudo').forEach(el=>el.classList.remove('ativa'));
   document.querySelectorAll('.aba-btn').forEach(el=>el.classList.remove('ativa'));
   document.getElementById('aba-'+aba).classList.add('ativa');
@@ -797,6 +810,17 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('tela-login').style.display = 'none';
     document.getElementById('conteudo-principal').style.display = 'block';
     document.getElementById('usuario-logado').textContent = user.email;
+
+    const podeVerDashboard = usuarioPodeVerDashboard(user.email);
+    const btnDashboard = document.getElementById('btn-aba-dashboard');
+
+    if(podeVerDashboard){
+      btnDashboard.style.display = '';
+    } else {
+      btnDashboard.style.display = 'none';
+      trocarAba('mapa');
+    }
+
     carregarDados();
   } else {
     document.getElementById('tela-login').style.display = 'flex';
