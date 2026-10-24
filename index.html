@@ -4,390 +4,354 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão Tryp Congonhas</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
-  :root{
-    --azul-escuro:#1f3a5f;
-    --azul-medio:#3a6ea5;
-    --azul-claro:#eaf1f8;
-    --azul-borda:#c7d7e8;
-    --cinza-texto:#4a4a4a;
-    --verde:#2e7d32;
-    --verde-fundo:#e8f5e9;
-    --amarelo:#f9a825;
-    --amarelo-fundo:#fff8e1;
-    --vermelho:#c62828;
-    --vermelho-fundo:#ffebee;
-    --roxo:#6a1b9a;
-    --roxo-fundo:#f3e5f5;
-    --cinza-bloq:#757575;
-    --cinza-fundo:#ececec;
-    --dourado:#c99b2e;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:var(--cinza-texto);}
+:root{
+  --azul-primario:#1565c0; --azul-escuro:#0d47a1; --azul-claro:#e3f2fd; --azul-medio:#1976d2;
+  --cinza-texto:#37474f; --cinza-claro:#f5f7fa; --cinza-borda:#dde3ea;
+  --verde:#2e7d32; --verde-fundo:#e8f5e9;
+  --amarelo:#f9a825; --amarelo-fundo:#fff8e1;
+  --vermelho:#c62828; --vermelho-fundo:#ffebee;
+  --roxo:#6a1b9a; --roxo-fundo:#f3e5f5;
+  --cinza-bloq:#757575; --cinza-fundo:#ececec;
+  --dourado:#c99b2e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--cinza-claro);color:var(--cinza-texto);}
 
-  /* TELA DE LOGIN */
-  #tela-login{position:fixed;inset:0;background:linear-gradient(135deg,var(--azul-escuro),var(--azul-medio));display:flex;align-items:center;justify-content:center;z-index:2000;}
-  #tela-login.hidden{display:none;}
-  .login-box{background:#fff;padding:40px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.3);width:100%;max-width:380px;text-align:center;}
-  .login-box h1{margin:0 0 8px;color:var(--azul-escuro);font-size:24px;}
-  .login-box p{margin:0 0 24px;color:#777;font-size:14px;}
-  .login-box input{width:100%;padding:12px;margin-bottom:12px;border:1px solid var(--azul-borda);border-radius:6px;font-size:14px;}
-  .login-box button{width:100%;padding:12px;background:var(--azul-medio);color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;}
-  .login-box button:hover{background:#2f5a85;}
-  .login-erro{color:var(--vermelho);font-size:13px;margin-top:10px;min-height:18px;}
+/* ===== LOGIN ===== */
+#tela-login{
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,var(--azul-escuro),var(--azul-primario),var(--azul-medio));
+}
+.login-card{
+  background:#fff;padding:40px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.25);
+  width:100%;max-width:380px;text-align:center;
+}
+.login-card h1{font-size:28px;margin-bottom:4px;color:var(--azul-escuro);}
+.login-card p{color:#777;margin-bottom:24px;font-size:14px;}
+.login-card input{
+  width:100%;padding:12px;margin-bottom:14px;border:1px solid var(--cinza-borda);
+  border-radius:8px;font-size:14px;
+}
+.login-card button{
+  width:100%;padding:12px;background:var(--azul-primario);color:#fff;border:none;
+  border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;
+}
+.login-card button:hover{background:var(--azul-escuro);}
+#login-erro{
+  display:none;background:var(--vermelho-fundo);color:var(--vermelho);padding:10px;
+  border-radius:6px;margin-bottom:14px;font-size:13px;
+}
 
-  header{background:var(--azul-escuro);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
-  header h1{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;}
-  .header-info{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .usuario-logado{font-size:13px;opacity:.9;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;}
-  header button{background:var(--azul-medio);color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px;}
-  header button:hover{background:#2f5a85;}
-  .btn-sair{background:#c62828 !important;}
-  .btn-sair:hover{background:#a02020 !important;}
-  #status-conexao{font-size:12px;opacity:.85;}
+/* ===== LAYOUT GERAL ===== */
+#conteudo-principal{display:none;}
+header{
+  background:linear-gradient(135deg,var(--azul-escuro),var(--azul-primario));
+  color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+header h1{font-size:22px;display:flex;align-items:center;gap:10px;}
+.header-direita{display:flex;align-items:center;gap:16px;font-size:14px;}
+#btn-logout{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;
+  padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;transition:background .2s;
+}
+#btn-logout:hover{background:rgba(255,255,255,.3);}
 
-  /* ABAS */
-  .abas{background:#fff;border-bottom:2px solid var(--azul-borda);padding:0 24px;display:flex;gap:4px;}
-  .aba-btn{padding:14px 24px;border:none;background:transparent;cursor:pointer;font-size:15px;font-weight:600;color:#777;border-bottom:3px solid transparent;transition:.2s;}
-  .aba-btn:hover{color:var(--azul-escuro);background:var(--azul-claro);}
-  .aba-btn.ativa{color:var(--azul-escuro);border-bottom-color:var(--azul-medio);}
-  .aba-conteudo{display:none;}
-  .aba-conteudo.ativa{display:block;}
+.tabs-nav{display:flex;background:#fff;border-bottom:2px solid var(--cinza-borda);padding:0 24px;gap:6px;}
+.aba-btn{
+  padding:14px 22px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:600;
+  color:#888;border-bottom:3px solid transparent;transition:all .2s;
+}
+.aba-btn.ativa{color:var(--azul-primario);border-bottom-color:var(--azul-primario);}
+.aba-conteudo{display:none;padding:24px;max-width:1400px;margin:0 auto;}
+.aba-conteudo.ativa{display:block;}
 
-  #overlay-loading{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;font-size:16px;color:var(--azul-escuro);gap:10px;}
-  #overlay-loading.hidden{display:none;}
-  .spinner{width:36px;height:36px;border:4px solid var(--azul-claro);border-top-color:var(--azul-medio);border-radius:50%;animation:girar 1s linear infinite;}
-  @keyframes girar{to{transform:rotate(360deg);}}
+/* ===== CARDS RESUMO ===== */
+.resumo-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;
+}
+.resumo-card{
+  background:#fff;border-radius:10px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.08);
+  border-top:4px solid var(--azul-primario);
+}
+.resumo-card .valor{font-size:24px;font-weight:700;color:var(--azul-escuro);}
+.resumo-card .rotulo{font-size:12px;color:#888;margin-top:4px;}
 
-  #dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:18px 24px;}
-  .card{background:#fff;border:1px solid var(--azul-borda);border-radius:8px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-  .card .num{font-size:22px;font-weight:700;color:var(--azul-escuro);}
-  .card .lbl{font-size:12px;color:#777;margin-top:4px;}
+/* ===== FILTROS ===== */
+.filtros-bar{
+  background:#fff;padding:16px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;
+}
+.filtros-bar input, .filtros-bar select{
+  padding:9px 12px;border:1px solid var(--cinza-borda);border-radius:6px;font-size:13px;
+}
+.filtros-bar input[type="text"]{flex:1;min-width:180px;}
+.btn{
+  padding:9px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;
+  transition:background .2s;
+}
+.btn-primario{background:var(--azul-primario);color:#fff;}
+.btn-primario:hover{background:var(--azul-escuro);}
+.btn-secundario{background:#eee;color:#555;}
+.btn-secundario:hover{background:#ddd;}
+#contador-geral{font-size:13px;color:#777;margin-left:auto;}
 
-  /* DASHBOARD ANALÍTICO */
-  #dashboard-analitico{padding:20px 24px;}
-  .filtros-dash{background:#fff;padding:16px;border-radius:8px;border:1px solid var(--azul-borda);display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:20px;}
-  .filtros-dash .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;}
-  .filtros-dash input,.filtros-dash select{padding:8px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;}
-  .filtros-dash button{padding:8px 16px;border:none;background:var(--azul-medio);color:#fff;border-radius:6px;cursor:pointer;height:36px;}
+/* ===== LEGENDA ===== */
+.legenda{
+  display:flex;flex-wrap:wrap;gap:14px;background:#fff;padding:12px 16px;border-radius:10px;
+  margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);font-size:12px;
+}
+.legenda-item{display:flex;align-items:center;gap:6px;}
+.legenda-cor{width:14px;height:14px;border-radius:4px;display:inline-block;}
 
-  .metricas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;}
-  .metrica-card{background:#fff;border-radius:8px;padding:18px;border:1px solid var(--azul-borda);box-shadow:0 1px 3px rgba(0,0,0,.05);}
-  .metrica-card .titulo{font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
-  .metrica-card .valor{font-size:28px;font-weight:700;color:var(--azul-escuro);}
-  .metrica-card .sub{font-size:12px;color:#999;margin-top:4px;}
-  .metrica-card.vendas .valor{color:var(--vermelho);}
-  .metrica-card.vgv .valor{color:var(--verde);}
-  .metrica-card.reservas .valor{color:var(--amarelo);}
-  .metrica-card.ticket .valor{color:var(--azul-medio);}
+/* ===== ANDARES ===== */
+.andar-bloco{background:#fff;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;}
+.andar-header{
+  padding:14px 18px;background:var(--azul-claro);cursor:pointer;display:flex;
+  justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.andar-titulo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.andar-titulo strong{color:var(--azul-escuro);font-size:15px;}
+.andar-stats{font-size:12px;color:#607d8b;}
+.seta{font-size:12px;color:var(--azul-primario);transition:transform .2s;}
+.contador-resultados{font-size:12px;color:#888;}
+.andar-corpo{max-height:5000px;overflow:hidden;transition:max-height .3s ease;}
+.andar-corpo.colapsado{max-height:0;}
+.grid-unidades{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;padding:16px;
+}
 
-  .secao-dash{background:#fff;border-radius:8px;padding:18px;border:1px solid var(--azul-borda);margin-bottom:20px;}
-  .secao-dash h3{margin:0 0 16px 0;color:var(--azul-escuro);font-size:16px;display:flex;align-items:center;gap:8px;}
+/* ===== CARD UNIDADE ===== */
+.unidade-card{
+  border-radius:8px;padding:10px;cursor:pointer;border:2px solid transparent;
+  transition:transform .15s; position:relative;
+}
+.unidade-card:hover{transform:translateY(-2px);box-shadow:0 3px 10px rgba(0,0,0,.15);}
+.status-disponivel{background:var(--verde-fundo);border-color:var(--verde);}
+.status-reservada{background:var(--amarelo-fundo);border-color:var(--amarelo);}
+.status-vendida{background:var(--vermelho-fundo);border-color:var(--vermelho);}
+.status-permuta{background:var(--roxo-fundo);border-color:var(--roxo);}
+.bloqueada{background:var(--cinza-fundo) !important;border-color:var(--cinza-bloq) !important;}
+.diferenciada{box-shadow:inset 0 0 0 2px var(--dourado);}
+.unidade-card:hover.diferenciada{box-shadow:inset 0 0 0 2px var(--dourado),0 3px 10px rgba(0,0,0,.15);}
+.card-numero{font-weight:700;font-size:15px;color:var(--azul-escuro);}
+.card-area{font-size:11px;color:#666;}
+.card-status{font-size:11px;font-weight:600;margin-top:4px;}
+.card-icones{font-size:12px;margin-top:4px;}
+.card-auditoria{font-size:9px;color:#999;margin-top:4px;font-style:italic;}
 
-  .barra-container{margin-bottom:10px;}
-  .barra-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
-  .barra-label span:last-child{font-weight:600;}
-  .barra-fundo{height:24px;background:#f0f0f0;border-radius:4px;overflow:hidden;}
-  .barra-preenchimento{height:100%;border-radius:4px;transition:width .5s;}
+/* ===== DASHBOARD ANALÍTICO ===== */
+.metricas-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;
+}
+.metrica-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid var(--azul-primario);}
+.metrica-card .valor{font-size:22px;font-weight:700;color:var(--azul-escuro);}
+.metrica-card .rotulo{font-size:12px;color:#888;margin-top:4px;}
 
-  table.ranking{width:100%;border-collapse:collapse;font-size:13px;}
-  table.ranking th{text-align:left;padding:10px;background:var(--azul-claro);color:var(--azul-escuro);font-weight:600;}
-  table.ranking td{padding:10px;border-bottom:1px solid #eee;}
-  table.ranking tr:hover{background:#f9fbfd;}
-  .posicao{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:var(--azul-claro);color:var(--azul-escuro);font-weight:700;font-size:12px;}
-  .posicao.top1{background:var(--dourado);color:#fff;}
-  .posicao.top2{background:#c0c0c0;color:#fff;}
-  .posicao.top3{background:#cd7f32;color:#fff;}
+.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.tres-colunas{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+@media(max-width:900px){.duas-colunas,.tres-colunas{grid-template-columns:1fr;}}
 
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-  @media(max-width:768px){.grid-2{grid-template-columns:1fr;}}
+.painel{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.painel h3{font-size:14px;color:var(--azul-escuro);margin-bottom:14px;}
+.ranking-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cinza-borda);font-size:13px;}
+.ranking-item:last-child{border-bottom:none;}
+.sem-dados{color:#999;font-size:13px;text-align:center;padding:20px 0;}
 
-  #filtros{background:#fff;margin:0 24px 18px;padding:14px;border-radius:8px;border:1px solid var(--azul-borda);display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
-  #filtros .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;}
-  #filtros input,#filtros select{padding:8px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;min-width:140px;}
-  #filtros button{padding:8px 14px;border:none;background:var(--azul-medio);color:#fff;border-radius:6px;cursor:pointer;height:36px;}
-  #contador-resultados{font-size:13px;color:#555;margin-left:auto;align-self:center;}
+.grafico-container{display:flex;align-items:flex-end;gap:10px;height:170px;padding:10px 4px;}
+.barra-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;}
+.barra{width:60%;background:var(--azul-primario);border-radius:4px 4px 0 0;min-height:3px;transition:height .3s ease;}
+.barra-valor{font-size:11px;font-weight:700;color:var(--azul-escuro);}
+.barra-label{font-size:10px;color:#777;text-align:center;}
 
-  #legenda{display:flex;gap:16px;flex-wrap:wrap;padding:0 24px 18px;font-size:12px;color:#555;}
-  #legenda span{display:flex;align-items:center;gap:6px;}
-  .dot{width:12px;height:12px;border-radius:3px;display:inline-block;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+table th{text-align:left;padding:10px;background:var(--azul-claro);color:var(--azul-escuro);font-size:12px;}
+table td{padding:10px;border-bottom:1px solid var(--cinza-borda);}
+.badge{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;}
+.badge-disponivel{background:var(--verde);}
+.badge-reservada{background:var(--amarelo);}
+.badge-vendida{background:var(--vermelho);}
+.badge-permuta{background:var(--roxo);}
 
-  #andares{padding:0 24px 40px;display:flex;flex-direction:column;gap:14px;}
-  .andar-bloco{background:#fff;border:1px solid var(--azul-borda);border-radius:8px;overflow:hidden;}
-  .andar-header{background:var(--azul-claro);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;flex-wrap:wrap;gap:8px;}
-  .andar-header h2{margin:0;font-size:16px;color:var(--azul-escuro);}
-  .andar-stats{font-size:12px;color:#555;display:flex:gap:10px;flex-wrap:wrap;}
-  .andar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;padding:14px;}
-  .andar-grid.collapsed{display:none;}
-
-  .unit{position:relative;border:2px solid;border-radius:6px;padding:8px 4px 4px;text-align:center;cursor:pointer;font-size:11px;transition:.15s;background:#fff;}
-  .unit:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.12);}
-  .unit.disponivel{background:var(--verde-fundo);border-color:var(--verde);}
-  .unit.reservada{background:var(--amarelo-fundo);border-color:var(--amarelo);}
-  .unit.vendida{background:var(--vermelho-fundo);border-color:var(--vermelho);}
-  .unit.permuta{background:var(--roxo-fundo);border-color:var(--roxo);}
-  .unit.bloqueado{background:var(--cinza-fundo) !important;}
-  .unit.diferenciada{box-shadow:inset 0 0 0 2px var(--dourado);}
-  .unit .num{font-weight:700;color:var(--azul-escuro);font-size:12px;}
-  .unit .area{color:#777;font-size:10px;}
-  .unit .atualizado-por{font-size:8px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .unit .icones{position:absolute;top:2px;right:3px;font-size:10px;}
-  .unit[hidden]{display:none;}
-
-  .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
-  .modal-overlay.hidden{display:none;}
-  .modal{background:#fff;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;position:relative;}
-  .modal h2{margin-top:0;color:var(--azul-escuro);font-size:18px;}
-  .modal .linha{margin-bottom:12px;display:flex;flex-direction:column;gap:4px;}
-  .modal label{font-size:12px;font-weight:600;color:#555;}
-  .modal input,.modal select,.modal textarea{padding:9px;border:1px solid var(--azul-borda);border-radius:6px;font-size:13px;width:100%;}
-  .modal textarea{resize:vertical;min-height:60px;}
-  .aviso-bloqueio{background:#fdecea;border:1px solid var(--vermelho);color:var(--vermelho);padding:8px;border-radius:6px;font-size:12px;margin-bottom:10px;}
-  .oculto{display:none;}
-  .modal-botoes{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
-  .modal-botoes button{padding:9px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;}
-  .btn-cancelar{background:#e0e0e0;}
-  .btn-salvar{background:var(--azul-medio);color:#fff;}
-  .fechar-x{position:absolute;top:14px;right:18px;cursor:pointer;font-size:18px;color:#888;}
-  .info-auditoria{background:var(--azul-claro);padding:10px;border-radius:6px;font-size:12px;color:#555;margin-bottom:14px;}
-  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
-  .badge-vendida{background:var(--vermelho-fundo);color:var(--vermelho);}
-  .badge-reservada{background:var(--amarelo-fundo);color:#b8860b;}
-  .badge-permuta{background:var(--roxo-fundo);color:var(--roxo);}
+/* ===== MODAL ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.ativo{display:flex;}
+.modal-box{
+  background:#fff;border-radius:12px;padding:26px;max-width:480px;width:100%;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-box h2{color:var(--azul-escuro);margin-bottom:4px;font-size:20px;}
+.modal-box .modal-sub{color:#888;font-size:13px;margin-bottom:18px;}
+.campo{margin-bottom:14px;}
+.campo label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px;}
+.campo input, .campo select, .campo textarea{
+  width:100%;padding:10px;border:1px solid var(--cinza-borda);border-radius:6px;font-size:13px;
+}
+.campo input[readonly]{background:#f0f0f0;color:#666;}
+.campo-checkbox{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.campo-checkbox input{width:auto;}
+#info-auditoria{
+  background:var(--azul-claro);padding:10px;border-radius:6px;font-size:11px;color:#555;
+  margin-bottom:14px;display:none;
+}
+.modal-botoes{display:flex;gap:10px;margin-top:20px;}
+.modal-botoes button{flex:1;padding:12px;border:none;border-radius:8px;font-weight:600;cursor:pointer;}
+.btn-salvar{background:var(--azul-primario);color:#fff;}
+.btn-cancelar{background:#eee;color:#555;}
 </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- ===== TELA DE LOGIN ===== -->
 <div id="tela-login">
-  <div class="login-box">
+  <div class="login-card">
     <h1>🏢 Gestão Tryp Congonhas</h1>
     <p>Faça login para acessar o sistema</p>
-    <input type="email" id="login-email" placeholder="Seu e-mail" autocomplete="username">
-    <input type="password" id="login-senha" placeholder="Sua senha" autocomplete="current-password">
+    <div id="login-erro"></div>
+    <input type="email" id="login-email" placeholder="E-mail">
+    <input type="password" id="login-senha" placeholder="Senha">
     <button onclick="fazerLogin()">Entrar</button>
-    <div class="login-erro" id="login-erro"></div>
   </div>
 </div>
 
-<div id="overlay-loading" class="hidden">
-  <div class="spinner"></div>
-  <div>Conectando ao banco de dados...</div>
-</div>
-
-<div id="conteudo-principal" style="display:none;">
+<!-- ===== CONTEÚDO PRINCIPAL ===== -->
+<div id="conteudo-principal">
   <header>
     <h1>🏢 Gestão Tryp Congonhas</h1>
-    <div class="header-info">
-      <span id="status-conexao">🔄 Sincronizado</span>
-      <span class="usuario-logado" id="usuario-logado">👤 </span>
-      <button onclick="exportarCSV()">⬇ Exportar CSV</button>
-      <button class="btn-sair" onclick="fazerLogout()">🚪 Sair</button>
+    <div class="header-direita">
+      <span>👤 <span id="usuario-logado"></span></span>
+      <button id="btn-logout" onclick="fazerLogout()">🚪 Sair</button>
     </div>
   </header>
 
-  <!-- ABAS -->
-  <div class="abas">
-    <button class="aba-btn ativa" id="btn-aba-mapa" onclick="trocarAba('mapa')">🗺️ Mapa de Unidades</button>
-    <button class="aba-btn" id="btn-aba-dashboard" onclick="trocarAba('dashboard')">📊 Dashboard</button>
+  <div class="tabs-nav">
+    <button id="btn-aba-mapa" class="aba-btn ativa" onclick="trocarAba('mapa')">🗺️ Mapa de Unidades</button>
+    <button id="btn-aba-dashboard" class="aba-btn" onclick="trocarAba('dashboard')">📊 Dashboard</button>
   </div>
 
-  <!-- ABA MAPA DE UNIDADES -->
+  <!-- ===== ABA MAPA ===== -->
   <div id="aba-mapa" class="aba-conteudo ativa">
-    <div id="dashboard"></div>
-
-    <div id="filtros">
-      <div class="campo">
-        <label>Buscar</label>
-        <input type="text" id="f-busca" placeholder="Unidade, comprador, corretor...">
-      </div>
-      <div class="campo">
-        <label>Pavimento</label>
-        <select id="f-andar">
-          <option value="">Todos</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Situação</label>
-        <select id="f-status">
-          <option value="">Todas</option>
-          <option value="disponivel">Disponível</option>
-          <option value="reservada">Reservada</option>
-          <option value="vendida">Vendida</option>
-          <option value="permuta">Permuta</option>
-          <option value="bloqueado">Bloqueada</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Assinatura</label>
-        <select id="f-assinatura">
-          <option value="">Todas</option>
-          <option value="sim">Assinado</option>
-          <option value="pendente">Pendente</option>
-          <option value="nao">Não assinado</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Metragem</label>
-        <select id="f-metragem">
-          <option value="">Todas</option>
-          <option value="diferenciadas">Diferenciadas (≥22m²)</option>
-          <option value="padrao">Padrão</option>
-        </select>
-      </div>
-      <button onclick="limparFiltros()">Limpar filtros</button>
-      <div id="contador-resultados"></div>
+    <div class="resumo-grid">
+      <div class="resumo-card"><div class="valor" id="card-total">0</div><div class="rotulo">Total</div></div>
+      <div class="resumo-card"><div class="valor" id="card-disponiveis">0</div><div class="rotulo">Disponíveis</div></div>
+      <div class="resumo-card"><div class="valor" id="card-reservadas">0</div><div class="rotulo">Reservadas</div></div>
+      <div class="resumo-card"><div class="valor" id="card-vendidas">0</div><div class="rotulo">Vendidas</div></div>
+      <div class="resumo-card"><div class="valor" id="card-permuta">0</div><div class="rotulo">Permuta</div></div>
+      <div class="resumo-card"><div class="valor" id="card-bloqueadas">0</div><div class="rotulo">Bloqueadas</div></div>
+      <div class="resumo-card"><div class="valor" id="card-vgv-total">R$ 0,00</div><div class="rotulo">VGV Total</div></div>
+      <div class="resumo-card"><div class="valor" id="card-vgv-vendido">R$ 0,00</div><div class="rotulo">VGV Vendido</div></div>
     </div>
 
-    <div id="legenda">
-      <span><i class="dot" style="background:var(--verde-fundo);border:2px solid var(--verde)"></i> Disponível</span>
-      <span><i class="dot" style="background:var(--amarelo-fundo);border:2px solid var(--amarelo)"></i> Reservada</span>
-      <span><i class="dot" style="background:var(--vermelho-fundo);border:2px solid var(--vermelho)"></i> Vendida</span>
-      <span><i class="dot" style="background:var(--roxo-fundo);border:2px solid var(--roxo)"></i> Permuta</span>
-      <span><i class="dot" style="background:var(--cinza-fundo);border:2px solid var(--cinza-bloq)"></i> 🔒 Bloqueada</span>
-      <span>⭐ Diferenciada (≥22m²)</span>
-      <span>✔ Assinado</span>
+    <div class="filtros-bar">
+      <input type="text" id="filtro-busca" placeholder="🔍 Buscar unidade, comprador, corretor..." oninput="aplicarFiltros()">
+      <select id="filtro-pavimento" onchange="aplicarFiltros()">
+        <option value="">Todos os pavimentos</option>
+        <option value="1">1º Andar</option><option value="2">2º Andar</option>
+        <option value="3">3º Andar</option><option value="4">4º Andar</option>
+        <option value="5">5º Andar</option><option value="6">6º Andar</option>
+        <option value="7">7º Andar</option><option value="8">8º Andar</option>
+      </select>
+      <select id="filtro-situacao" onchange="aplicarFiltros()">
+        <option value="">Todas as situações</option>
+        <option value="disponivel">Disponível</option>
+        <option value="reservada">Reservada</option>
+        <option value="vendida">Vendida</option>
+        <option value="permuta">Permuta</option>
+        <option value="bloqueada">Bloqueada</option>
+      </select>
+      <select id="filtro-assinatura" onchange="aplicarFiltros()">
+        <option value="">Todas as assinaturas</option>
+        <option value="nao">Não assinado</option>
+        <option value="pendente">Pendente</option>
+        <option value="sim">Assinado</option>
+      </select>
+      <select id="filtro-metragem" onchange="aplicarFiltros()">
+        <option value="">Todas as metragens</option>
+        <option value="diferenciada">Diferenciadas ⭐</option>
+        <option value="padrao">Padrão</option>
+      </select>
+      <button class="btn btn-secundario" onclick="limparFiltros()">Limpar filtros</button>
+      <button class="btn btn-primario" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+      <span id="contador-geral">0 unidade(s) encontrada(s)</span>
+    </div>
+
+    <div class="legenda">
+      <div class="legenda-item"><span class="legenda-cor" style="background:var(--verde-fundo);border:2px solid var(--verde);"></span>Disponível</div>
+      <div class="legenda-item"><span class="legenda-cor" style="background:var(--amarelo-fundo);border:2px solid var(--amarelo);"></span>Reservada</div>
+      <div class="legenda-item"><span class="legenda-cor" style="background:var(--vermelho-fundo);border:2px solid var(--vermelho);"></span>Vendida</div>
+      <div class="legenda-item"><span class="legenda-cor" style="background:var(--roxo-fundo);border:2px solid var(--roxo);"></span>Permuta</div>
+      <div class="legenda-item"><span class="legenda-cor" style="background:var(--cinza-fundo);border:2px solid var(--cinza-bloq);"></span>Bloqueada 🔒</div>
+      <div class="legenda-item">⭐ Metragem diferenciada</div>
+      <div class="legenda-item">✔ Assinado &nbsp; ◐ Pendente</div>
     </div>
 
     <div id="andares"></div>
   </div>
 
-  <!-- ABA DASHBOARD -->
+  <!-- ===== ABA DASHBOARD ===== -->
   <div id="aba-dashboard" class="aba-conteudo">
-    <div id="dashboard-analitico">
-      <div class="filtros-dash">
-        <div class="campo">
-          <label>📅 Data início</label>
-          <input type="date" id="dash-data-inicio">
-        </div>
-        <div class="campo">
-          <label>📅 Data fim</label>
-          <input type="date" id="dash-data-fim">
-        </div>
-        <div class="campo">
-          <label>Pavimento</label>
-          <select id="dash-andar">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="campo">
-          <label>Status</label>
-          <select id="dash-status">
-            <option value="">Todos</option>
-            <option value="vendida">Vendida</option>
-            <option value="reservada">Reservada</option>
-            <option value="permuta">Permuta</option>
-          </select>
-        </div>
-        <button onclick="atualizarDashboard()">🔍 Filtrar</button>
-        <button onclick="limparFiltrosDash()" style="background:#888;">Limpar</button>
-      </div>
+    <div class="filtros-bar">
+      <label style="font-size:12px;">De: <input type="date" id="dash-data-inicio" onchange="atualizarDashboard()"></label>
+      <label style="font-size:12px;">Até: <input type="date" id="dash-data-fim" onchange="atualizarDashboard()"></label>
+      <select id="dash-andar" onchange="atualizarDashboard()"><option value="">Todos os andares</option></select>
+      <select id="dash-status" onchange="atualizarDashboard()">
+        <option value="">Todos os status</option>
+        <option value="disponivel">Disponível</option>
+        <option value="reservada">Reservada</option>
+        <option value="vendida">Vendida</option>
+        <option value="permuta">Permuta</option>
+      </select>
+      <button class="btn btn-secundario" onclick="limparFiltrosDash()">Limpar filtros</button>
+    </div>
 
-      <div class="metricas-grid">
-        <div class="metrica-card vendas">
-          <div class="titulo">Vendas no período</div>
-          <div class="valor" id="met-vendas">0</div>
-          <div class="sub" id="met-vendas-sub">unidades vendidas</div>
-        </div>
-        <div class="metrica-card vgv">
-          <div class="titulo">VGV Período</div>
-          <div class="valor" id="met-vgv">R$ 0</div>
-          <div class="sub" id="met-vgv-sub">valor total das vendas</div>
-        </div>
-        <div class="metrica-card ticket">
-          <div class="titulo">Ticket Médio</div>
-          <div class="valor" id="met-ticket">R$ 0</div>
-          <div class="sub">valor médio por unidade</div>
-        </div>
-        <div class="metrica-card reservas">
-          <div class="titulo">Reservas</div>
-          <div class="valor" id="met-reservas">0</div>
-          <div class="sub">unidades reservadas no período</div>
-        </div>
-        <div class="metrica-card">
-          <div class="titulo">Taxa de Assinatura</div>
-          <div class="valor" id="met-assinatura">0%</div>
-          <div class="sub">das vendas estão assinadas</div>
-        </div>
-        <div class="metrica-card">
-          <div class="titulo">Valor/m² Médio</div>
-          <div class="valor" id="met-valorm2">R$ 0</div>
-          <div class="sub">média do período</div>
-        </div>
-      </div>
+    <div class="metricas-grid">
+      <div class="metrica-card"><div class="valor" id="dash-vendas-periodo">0</div><div class="rotulo">Vendas no período</div></div>
+      <div class="metrica-card"><div class="valor" id="dash-vgv-periodo">R$ 0,00</div><div class="rotulo">VGV Período</div></div>
+      <div class="metrica-card"><div class="valor" id="dash-ticket-medio">R$ 0,00</div><div class="rotulo">Ticket Médio</div></div>
+      <div class="metrica-card"><div class="valor" id="dash-reservas">0</div><div class="rotulo">Reservas</div></div>
+      <div class="metrica-card"><div class="valor" id="dash-taxa-assinatura">0%</div><div class="rotulo">Taxa de Assinatura</div></div>
+      <div class="metrica-card"><div class="valor" id="dash-valor-m2-medio">R$ 0,00</div><div class="rotulo">Valor/m² Médio</div></div>
+    </div>
 
-      <div class="grid-2">
-        <div class="secao-dash">
-          <h3>🏆 Top 5 Corretores (VGV)</h3>
-          <table class="ranking" id="ranking-corretores">
-            <thead><tr><th>#</th><th>Corretor</th><th>Vendas</th><th>VGV</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="secao-dash">
-          <h3>🏢 Top 5 Empresas Parceiras</h3>
-          <table class="ranking" id="ranking-empresas">
-            <thead><tr><th>#</th><th>Empresa</th><th>Vendas</th><th>VGV</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="duas-colunas">
+      <div class="painel"><h3>🏆 Top 5 Corretores por VGV</h3><div id="top-corretores"></div></div>
+      <div class="painel"><h3>🤝 Top 5 Empresas Parceiras por VGV</h3><div id="top-empresas"></div></div>
+    </div>
 
-      <div class="secao-dash">
-        <h3>📊 Vendas por Andar</h3>
-        <div id="vendas-por-andar"></div>
-      </div>
+    <div class="tres-colunas">
+      <div class="painel"><h3>Vendas por Andar</h3><div class="grafico-container" id="grafico-andar"></div></div>
+      <div class="painel"><h3>Vendas por Condição</h3><div class="grafico-container" id="grafico-condicao"></div></div>
+      <div class="painel"><h3>Evolução (6 meses)</h3><div class="grafico-container" id="grafico-evolucao"></div></div>
+    </div>
 
-      <div class="grid-2">
-        <div class="secao-dash">
-          <h3>💳 Vendas por Condição de Pagamento</h3>
-          <div id="vendas-por-condicao"></div>
-        </div>
-        <div class="secao-dash">
-          <h3>📈 Evolução de Vendas (últimos 6 meses)</h3>
-          <div id="evolucao-vendas"></div>
-        </div>
-      </div>
-
-      <div class="secao-dash">
-        <h3>🕐 Últimas Movimentações</h3>
-        <table class="ranking" id="ultimas-movimentacoes">
-          <thead><tr><th>Data</th><th>Unidade</th><th>Status</th><th>Comprador</th><th>Corretor</th><th>VGV</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <div class="painel">
+      <h3>Últimas Movimentações</h3>
+      <table>
+        <thead><tr><th>Data</th><th>Unidade</th><th>Status</th><th>Comprador</th><th>Corretor</th><th>VGV</th></tr></thead>
+        <tbody id="tabela-movimentacoes"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-overlay hidden" id="modal-overlay">
-  <div class="modal">
-    <span class="fechar-x" onclick="fecharModal()">✖</span>
-    <h2 id="modal-titulo">Unidade</h2>
+<!-- ===== MODAL UNIDADE ===== -->
+<div class="modal-overlay" id="modal-unidade">
+  <div class="modal-box">
+    <h2>Unidade <span id="modal-numero"></span></h2>
+    <p class="modal-sub">Área: <span id="modal-area"></span></p>
 
-    <div id="info-auditoria" class="info-auditoria oculto"></div>
+    <div id="info-auditoria"></div>
 
-    <div id="modal-aviso" class="aviso-bloqueio oculto">
-      ⚠ Esta unidade está bloqueada. Não é possível marcar como Vendida ou Reservada enquanto o bloqueio estiver ativo.
-    </div>
-
-    <div class="linha">
-      <label><input type="checkbox" id="m-bloqueado" onchange="toggleMotivoBloqueio()"> 🔒 Unidade bloqueada</label>
-    </div>
-    <div class="linha oculto" id="linha-motivo">
-      <label>Motivo do bloqueio</label>
-      <select id="m-motivo">
-        <option value="permuta">Unidade de permuta</option>
-        <option value="reserva_tecnica">Reserva técnica</option>
-        <option value="outro">Outro motivo</option>
-      </select>
-    </div>
-
-    <div class="linha">
+    <div class="campo">
       <label>Status</label>
-      <select id="m-status">
+      <select id="modal-status">
         <option value="disponivel">Disponível</option>
         <option value="reservada">Reservada</option>
         <option value="vendida">Vendida</option>
@@ -395,67 +359,65 @@
       </select>
     </div>
 
-    <div class="linha">
+    <div class="campo-checkbox">
+      <input type="checkbox" id="modal-bloqueado" onchange="toggleMotivoBloqueio()">
+      <label style="margin:0;">Unidade bloqueada</label>
+    </div>
+
+    <div class="campo" id="div-motivo-bloqueio" style="display:none;">
+      <label>Motivo do bloqueio</label>
+      <select id="modal-motivo-bloqueio">
+        <option value="permuta">Unidade de permuta</option>
+        <option value="reserva_tecnica">Reserva técnica</option>
+        <option value="outro">Outro motivo</option>
+      </select>
+    </div>
+
+    <div class="campo">
       <label>Assinatura</label>
-      <select id="m-assinado">
+      <select id="modal-assinado">
         <option value="nao">Não assinado</option>
         <option value="pendente">Pendente</option>
         <option value="sim">Assinado</option>
       </select>
     </div>
 
-    <div class="linha">
-      <label>Comprador / Cliente</label>
-      <input type="text" id="m-comprador">
-    </div>
-    <div class="linha">
-      <label>Corretor responsável</label>
-      <input type="text" id="m-corretor">
-    </div>
-    <div class="linha">
-      <label>Empresa parceira</label>
-      <input type="text" id="m-empresa">
-    </div>
-    <div class="linha">
-      <label>Condição de compra</label>
-      <select id="m-condicao">
+    <div class="campo"><label>Comprador</label><input type="text" id="modal-comprador"></div>
+    <div class="campo"><label>Corretor</label><input type="text" id="modal-corretor"></div>
+    <div class="campo"><label>Empresa Parceira</label><input type="text" id="modal-empresa"></div>
+
+    <div class="campo">
+      <label>Condição de pagamento</label>
+      <select id="modal-condicao">
         <option value="">Selecione...</option>
         <option value="a_vista">À vista</option>
         <option value="financiamento_bancario">Financiamento bancário</option>
         <option value="parcelado_construtora">Parcelado com a construtora</option>
       </select>
     </div>
-    <div class="linha">
-      <label>Valor da unidade (VGV)</label>
-      <input type="text" id="m-valor" oninput="onValorInput(event)">
+
+    <div class="campo">
+      <label>Valor (VGV)</label>
+      <input type="text" id="modal-valor" placeholder="R$ 0,00" oninput="onValorInput(event)">
     </div>
-    <div class="linha">
+
+    <div class="campo">
       <label>Valor por m² (automático)</label>
-      <input type="text" id="m-valorm2" readonly style="background:#f0f0f0">
+      <input type="text" id="modal-valor-m2" readonly>
     </div>
-    <div class="linha">
-      <label>Data da movimentação</label>
-      <input type="date" id="m-data">
-    </div>
-    <div class="linha">
-      <label>Observações</label>
-      <textarea id="m-obs"></textarea>
-    </div>
+
+    <div class="campo"><label>Data</label><input type="date" id="modal-data"></div>
+    <div class="campo"><label>Observações</label><textarea id="modal-obs" rows="3"></textarea></div>
 
     <div class="modal-botoes">
       <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-      <button class="btn-salvar" onclick="salvarUnidade()">Salvar alterações</button>
+      <button class="btn-salvar" onclick="salvarUnidade()">Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
 <script>
-/* ===================== CONFIG FIREBASE ===================== */
+/* ===== FIREBASE ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyDKUoiJ87ZFrhG0u6vRzpmtBxNuVHTocbo",
   authDomain: "tryp-congonhas.firebaseapp.com",
@@ -467,140 +429,235 @@ const firebaseConfig = {
   measurementId: "G-X19D3GGC35"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 const auth = firebase.auth();
-const unidadesRef = db.ref('unidades');
+const database = firebase.database();
+const unidadesRef = database.ref('unidades');
 
-/* ===================== DADOS BASE ===================== */
-const AREAS = [21.98,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,
-               28.63,21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,
-               22.00,22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.28];
+/* ===== ÁREAS POR POSIÇÃO (1 a 30) =====
+   ATENÇÃO: posição 01 assumida como 21.28 (confirmar com o usuário se não for isso) */
+const AREAS = [21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.35,28.63,28.63,
+               21.35,21.28,21.28,21.28,21.28,21.28,21.28,21.28,21.28,22.00,
+               22.00,21.35,21.28,21.28,21.28,21.35,22.97,22.97,21.35,21.28];
 
-const STATUS_LABELS = {disponivel:'Disponível',reservada:'Reservada',vendida:'Vendida',permuta:'Permuta'};
-const CONDICAO_LABELS = {a_vista:'À vista',financiamento_bancario:'Financiamento bancário',parcelado_construtora:'Parcelado com a construtora'};
-const ASSINADO_LABELS = {nao:'Não assinado',pendente:'Pendente',sim:'Assinado'};
-const MOTIVO_LABELS = {permuta:'Unidade de permuta',reserva_tecnica:'Reserva técnica',outro:'Outro motivo'};
+let unidadesState = {};
+let unidadeAtual = null;
 
-let unidades = {};
-let unidadeSelecionadaId = null;
-let andaresColapsados = {};
-
-/* ===================== AUTENTICAÇÃO ===================== */
-auth.onAuthStateChanged(user => {
-  if(user){
-    document.getElementById('tela-login').classList.add('hidden');
-    document.getElementById('conteudo-principal').style.display = 'block';
-    document.getElementById('usuario-logado').textContent = '👤 ' + user.email;
-    document.getElementById('overlay-loading').classList.remove('hidden');
-    carregarDados();
-  } else {
-    document.getElementById('tela-login').classList.remove('hidden');
-    document.getElementById('conteudo-principal').style.display = 'none';
-    document.getElementById('overlay-loading').classList.add('hidden');
-  }
-});
-
-function fazerLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const senha = document.getElementById('login-senha').value;
-  const erroDiv = document.getElementById('login-erro');
-
-  if(!email || !senha){
-    erroDiv.textContent = 'Preencha e-mail e senha';
-    return;
-  }
-
-  erroDiv.textContent = 'Entrando...';
-  auth.signInWithEmailAndPassword(email, senha)
-    .then(() => { erroDiv.textContent = ''; })
-    .catch(err => {
-      let msg = 'Erro ao fazer login';
-      if(err.code === 'auth/user-not-found') msg = 'Usuário não encontrado';
-      else if(err.code === 'auth/wrong-password') msg = 'Senha incorreta';
-      else if(err.code === 'auth/invalid-email') msg = 'E-mail inválido';
-      erroDiv.textContent = msg;
-    });
-}
-
-function fazerLogout(){
-  if(confirm('Deseja realmente sair?')){
-    auth.signOut();
-  }
-}
-
-document.getElementById('login-senha').addEventListener('keypress', e => {
-  if(e.key === 'Enter') fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keypress', e => {
-  if(e.key === 'Enter') fazerLogin();
-});
-
+/* ===== GERAÇÃO DE DADOS PADRÃO ===== */
 function gerarUnidadesPadrao(){
-  const obj = {};
+  const unidades = {};
   for(let andar=1; andar<=8; andar++){
     for(let pos=1; pos<=30; pos++){
       const id = andar*100+pos;
-      obj[id] = {
+      unidades[id] = {
         id, andar, pos, area: AREAS[pos-1],
-        status:"disponivel", bloqueado:false, motivoBloqueio:"",
-        assinado:"nao", comprador:"", corretor:"", empresa:"",
-        condicao:"", valor:0, data:"", obs:"",
-        atualizadoPor:"", atualizadoEm:""
+        status: "disponivel",
+        bloqueado: false,
+        motivoBloqueio: "",
+        assinado: "nao",
+        comprador: "", corretor: "", empresa: "",
+        condicao: "",
+        valor: 0,
+        data: "", obs: "",
+        atualizadoPor: "", atualizadoEm: ""
       };
     }
   }
-  return obj;
+  return unidades;
 }
 
-/* ===================== CARREGAR DADOS ===================== */
+/* ===== CARREGAR DADOS (TEMPO REAL) ===== */
 function carregarDados(){
   unidadesRef.on('value', snapshot => {
-    const dados = snapshot.val();
-    if(!dados){
+    const data = snapshot.val();
+    if(!data){
       const padrao = gerarUnidadesPadrao();
       unidadesRef.set(padrao);
-      unidades = padrao;
+      unidadesState = padrao;
     } else {
-      unidades = dados;
+      unidadesState = data;
     }
-    document.getElementById('overlay-loading').classList.add('hidden');
-    document.getElementById('status-conexao').textContent = '🔄 Sincronizado';
-
-    if(document.getElementById('aba-dashboard').classList.contains('ativa')){
-      atualizarDashboard();
-    } else {
-      renderizarTudo();
-    }
-  }, err => {
-    document.getElementById('status-conexao').textContent = '⚠ Erro de conexão';
+    renderizarTudo();
   });
 }
 
-/* ===================== TROCAR ABA ===================== */
-function trocarAba(aba){
-  document.querySelectorAll('.aba-btn').forEach(b=>b.classList.remove('ativa'));
-  document.querySelectorAll('.aba-conteudo').forEach(c=>c.classList.remove('ativa'));
-
-  if(aba==='mapa'){
-    document.getElementById('btn-aba-mapa').classList.add('ativa');
-    document.getElementById('aba-mapa').classList.add('ativa');
-    renderizarTudo();
-  } else {
-    document.getElementById('btn-aba-dashboard').classList.add('ativa');
-    document.getElementById('aba-dashboard').classList.add('ativa');
-    preencherSelectAndarDash();
+/* ===== RENDERIZAÇÃO GERAL ===== */
+function renderizarTudo(){
+  renderizarDashboard();
+  renderizarAndares();
+  preencherSelectAndarDash();
+  if(document.getElementById('aba-dashboard').classList.contains('ativa')){
     atualizarDashboard();
   }
 }
 
-/* ===================== DASHBOARD ANALÍTICO ===================== */
+function renderizarDashboard(){
+  const lista = Object.values(unidadesState);
+  const total = lista.length;
+  const disponiveis = lista.filter(u=>u.status==='disponivel' && !u.bloqueado).length;
+  const reservadas = lista.filter(u=>u.status==='reservada').length;
+  const vendidas = lista.filter(u=>u.status==='vendida').length;
+  const permuta = lista.filter(u=>u.status==='permuta').length;
+  const bloqueadas = lista.filter(u=>u.bloqueado).length;
+  const vgvTotal = lista.reduce((s,u)=>s+(Number(u.valor)||0),0);
+  const vgvVendido = lista.filter(u=>u.status==='vendida').reduce((s,u)=>s+(Number(u.valor)||0),0);
+
+  document.getElementById('card-total').textContent = total;
+  document.getElementById('card-disponiveis').textContent = disponiveis;
+  document.getElementById('card-reservadas').textContent = reservadas;
+  document.getElementById('card-vendidas').textContent = vendidas;
+  document.getElementById('card-permuta').textContent = permuta;
+  document.getElementById('card-bloqueadas').textContent = bloqueadas;
+  document.getElementById('card-vgv-total').textContent = formatarMoeda(vgvTotal);
+  document.getElementById('card-vgv-vendido').textContent = formatarMoeda(vgvVendido);
+}
+
+function renderizarAndares(){
+  const container = document.getElementById('andares');
+  container.innerHTML = '';
+  const filtroAtivo = temFiltroAtivo();
+
+  for(let andar=8; andar>=1; andar--){
+    const unidadesAndar = Object.values(unidadesState).filter(u=>u.andar===andar);
+    const unidadesFiltradas = unidadesAndar.filter(unidadeBateComFiltros);
+
+    if(filtroAtivo && unidadesFiltradas.length === 0) continue;
+
+    const total = unidadesAndar.length;
+    const disponiveis = unidadesAndar.filter(u=>u.status==='disponivel' && !u.bloqueado).length;
+    const vendidas = unidadesAndar.filter(u=>u.status==='vendida').length;
+    const reservadas = unidadesAndar.filter(u=>u.status==='reservada').length;
+
+    const bloco = document.createElement('div');
+    bloco.className = 'andar-bloco';
+    bloco.innerHTML = `
+      <div class="andar-header" onclick="toggleAndar(${andar})">
+        <div class="andar-titulo">
+          <span class="seta" id="seta-${andar}">▼</span>
+          <strong>${andar}º Andar</strong>
+          <span class="andar-stats">Total: ${total} | Disp: ${disponiveis} | Reserv: ${reservadas} | Vend: ${vendidas}</span>
+        </div>
+        <span class="contador-resultados">${unidadesFiltradas.length} unidade(s)</span>
+      </div>
+      <div class="andar-corpo" id="corpo-${andar}">
+        <div class="grid-unidades" id="grid-${andar}"></div>
+      </div>
+    `;
+    container.appendChild(bloco);
+
+    const grid = bloco.querySelector(`#grid-${andar}`);
+    unidadesFiltradas.sort((a,b)=>a.pos-b.pos).forEach(u=>{
+      grid.appendChild(criarCardUnidade(u));
+    });
+  }
+  atualizarContadorGeral();
+}
+
+function criarCardUnidade(u){
+  const card = document.createElement('div');
+  let classes = ['unidade-card', 'status-'+u.status];
+  if(u.bloqueado) classes.push('bloqueada');
+  if(u.area >= 22.00) classes.push('diferenciada');
+  card.className = classes.join(' ');
+  card.onclick = ()=>abrirModal(u.id);
+
+  let icones = '';
+  if(u.bloqueado) icones += '🔒 ';
+  if(u.assinado === 'sim') icones += '✔ ';
+  else if(u.assinado === 'pendente') icones += '◐ ';
+  if(u.area >= 22.00) icones += '⭐';
+
+  let auditoria = '';
+  if(u.atualizadoPor){
+    const nomeCurto = u.atualizadoPor.split('@')[0];
+    auditoria = `<div class="card-auditoria">${nomeCurto}</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="card-numero">${u.id}</div>
+    <div class="card-area">${Number(u.area).toFixed(2)}m²</div>
+    <div class="card-status">${labelStatus(u.status)}</div>
+    <div class="card-icones">${icones}</div>
+    ${auditoria}
+  `;
+  return card;
+}
+
+function unidadeBateComFiltros(u){
+  const busca = document.getElementById('filtro-busca').value.toLowerCase().trim();
+  const pavimento = document.getElementById('filtro-pavimento').value;
+  const situacao = document.getElementById('filtro-situacao').value;
+  const assinatura = document.getElementById('filtro-assinatura').value;
+  const metragem = document.getElementById('filtro-metragem').value;
+
+  if(busca){
+    const texto = `${u.id} ${u.comprador||''} ${u.corretor||''} ${u.empresa||''}`.toLowerCase();
+    if(!texto.includes(busca)) return false;
+  }
+  if(pavimento && u.andar !== Number(pavimento)) return false;
+  if(situacao){
+    if(situacao === 'bloqueada'){
+      if(!u.bloqueado) return false;
+    } else {
+      if(u.status !== situacao) return false;
+    }
+  }
+  if(assinatura && u.assinado !== assinatura) return false;
+  if(metragem === 'diferenciada' && u.area < 22.00) return false;
+  if(metragem === 'padrao' && u.area >= 22.00) return false;
+
+  return true;
+}
+
+function temFiltroAtivo(){
+  return document.getElementById('filtro-busca').value.trim() !== '' ||
+    document.getElementById('filtro-pavimento').value !== '' ||
+    document.getElementById('filtro-situacao').value !== '' ||
+    document.getElementById('filtro-assinatura').value !== '' ||
+    document.getElementById('filtro-metragem').value !== '';
+}
+
+function aplicarFiltros(){ renderizarAndares(); }
+
+function atualizarContadorGeral(){
+  const total = Object.values(unidadesState).filter(unidadeBateComFiltros).length;
+  document.getElementById('contador-geral').textContent = `${total} unidade(s) encontrada(s)`;
+}
+
+function limparFiltros(){
+  document.getElementById('filtro-busca').value = '';
+  document.getElementById('filtro-pavimento').value = '';
+  document.getElementById('filtro-situacao').value = '';
+  document.getElementById('filtro-assinatura').value = '';
+  document.getElementById('filtro-metragem').value = '';
+  renderizarAndares();
+}
+
+function toggleAndar(andar){
+  const corpo = document.getElementById('corpo-'+andar);
+  const seta = document.getElementById('seta-'+andar);
+  corpo.classList.toggle('colapsado');
+  seta.textContent = corpo.classList.contains('colapsado') ? '▶' : '▼';
+}
+
+/* ===== ABAS ===== */
+function trocarAba(aba){
+  document.querySelectorAll('.aba-conteudo').forEach(el=>el.classList.remove('ativa'));
+  document.querySelectorAll('.aba-btn').forEach(el=>el.classList.remove('ativa'));
+  document.getElementById('aba-'+aba).classList.add('ativa');
+  document.getElementById('btn-aba-'+aba).classList.add('ativa');
+  if(aba === 'dashboard'){
+    atualizarDashboard();
+  }
+}
+
 function preencherSelectAndarDash(){
-  const sel = document.getElementById('dash-andar');
-  if(sel.options.length>1) return;
+  const select = document.getElementById('dash-andar');
+  if(select.options.length > 1) return;
   for(let a=1;a<=8;a++){
-    const op = document.createElement('option');
-    op.value=a; op.textContent=a+'º Andar';
-    sel.appendChild(op);
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a+'º Andar';
+    select.appendChild(opt);
   }
 }
 
@@ -610,146 +667,16 @@ function filtrarUnidadesDash(){
   const andar = document.getElementById('dash-andar').value;
   const status = document.getElementById('dash-status').value;
 
-  let lista = Object.values(unidades).filter(u => {
-    if(dataInicio && u.data && u.data < dataInicio) return false;
-    if(dataFim && u.data && u.data > dataFim) return false;
-    if((dataInicio || dataFim) && !u.data && u.status === 'disponivel') return false;
-    if(andar && String(u.andar) !== andar) return false;
+  return Object.values(unidadesState).filter(u=>{
+    if(andar && u.andar !== Number(andar)) return false;
     if(status && u.status !== status) return false;
+    if(dataInicio || dataFim){
+      if(!u.data) return false;
+      if(dataInicio && u.data < dataInicio) return false;
+      if(dataFim && u.data > dataFim) return false;
+    }
     return true;
   });
-
-  return lista;
-}
-
-function atualizarDashboard(){
-  const lista = filtrarUnidadesDash();
-
-  const vendas = lista.filter(u => u.status === 'vendida');
-  const reservas = lista.filter(u => u.status === 'reservada');
-  const vgvTotal = vendas.reduce((s,u) => s + (u.valor || 0), 0);
-  const ticketMedio = vendas.length > 0 ? vgvTotal / vendas.length : 0;
-  const assinadas = vendas.filter(u => u.assinado === 'sim').length;
-  const taxaAssinatura = vendas.length > 0 ? (assinadas / vendas.length * 100) : 0;
-  const valorM2Medio = vendas.length > 0 ? vendas.reduce((s,u) => s + ((u.valor||0)/u.area), 0) / vendas.length : 0;
-
-  document.getElementById('met-vendas').textContent = vendas.length;
-  document.getElementById('met-vendas-sub').textContent = `unidades vendidas`;
-  document.getElementById('met-vgv').textContent = formatarMoeda(vgvTotal);
-  document.getElementById('met-vgv-sub').textContent = `${vendas.length} vendas`;
-  document.getElementById('met-ticket').textContent = formatarMoeda(ticketMedio);
-  document.getElementById('met-reservas').textContent = reservas.length;
-  document.getElementById('met-assinatura').textContent = taxaAssinatura.toFixed(0) + '%';
-  document.getElementById('met-valorm2').textContent = formatarMoeda(valorM2Medio);
-
-  // Ranking Corretores
-  const corretores = {};
-  vendas.forEach(u => {
-    const nome = u.corretor || 'Não informado';
-    if(!corretores[nome]) corretores[nome] = {vendas:0, vgv:0};
-    corretores[nome].vendas++;
-    corretores[nome].vgv += (u.valor || 0);
-  });
-  const topCorretores = Object.entries(corretores).sort((a,b) => b[1].vgv - a[1].vgv).slice(0,5);
-
-  let htmlCorretores = '';
-  topCorretores.forEach(([nome, dados], i) => {
-    const posClass = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
-    htmlCorretores += `<tr><td><span class="posicao ${posClass}">${i+1}</span></td><td>${nome}</td><td>${dados.vendas}</td><td>${formatarMoeda(dados.vgv)}</td></tr>`;
-  });
-  document.querySelector('#ranking-corretores tbody').innerHTML = htmlCorretores || '<tr><td colspan="4" style="text-align:center;color:#999;">Nenhuma venda no período</td></tr>';
-
-  // Ranking Empresas
-  const empresas = {};
-  vendas.forEach(u => {
-    const nome = u.empresa || 'Não informado';
-    if(!empresas[nome]) empresas[nome] = {vendas:0, vgv:0};
-    empresas[nome].vendas++;
-    empresas[nome].vgv += (u.valor || 0);
-  });
-  const topEmpresas = Object.entries(empresas).sort((a,b) => b[1].vgv - a[1].vgv).slice(0,5);
-
-  let htmlEmpresas = '';
-  topEmpresas.forEach(([nome, dados], i) => {
-    const posClass = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
-    htmlEmpresas += `<tr><td><span class="posicao ${posClass}">${i+1}</span></td><td>${nome}</td><td>${dados.vendas}</td><td>${formatarMoeda(dados.vgv)}</td></tr>`;
-  });
-  document.querySelector('#ranking-empresas tbody').innerHTML = htmlEmpresas || '<tr><td colspan="4" style="text-align:center;color:#999;">Nenhuma venda no período</td></tr>';
-
-  // Vendas por Andar
-  const porAndar = {};
-  for(let a=1;a<=8;a++) porAndar[a] = {vendas:0, vgv:0};
-  vendas.forEach(u => {
-    porAndar[u.andar].vendas++;
-    porAndar[u.andar].vgv += (u.valor || 0);
-  });
-  const maxVendasAndar = Math.max(...Object.values(porAndar).map(v => v.vendas), 1);
-
-  let htmlAndar = '';
-  for(let a=1;a<=8;a++){
-    const dados = porAndar[a];
-    const pct = (dados.vendas / maxVendasAndar * 100);
-    htmlAndar += `<div class="barra-container"><div class="barra-label"><span>${a}º Andar</span><span>${dados.vendas} vendas | ${formatarMoeda(dados.vgv)}</span></div><div class="barra-fundo"><div class="barra-preenchimento" style="width:${pct}%;background:var(--azul-medio);"></div></div></div>`;
-  }
-  document.getElementById('vendas-por-andar').innerHTML = htmlAndar;
-
-  // Vendas por Condição
-  const porCondicao = {a_vista:0, financiamento_bancario:0, parcelado_construtora:0, '':0};
-  vendas.forEach(u => {
-    const key = u.condicao || '';
-    porCondicao[key] = (porCondicao[key] || 0) + 1;
-  });
-  const maxCondicao = Math.max(...Object.values(porCondicao), 1);
-
-  let htmlCondicao = '';
-  Object.entries(porCondicao).forEach(([key, qtd]) => {
-    if(qtd===0) return;
-    const label = CONDICAO_LABELS[key] || 'Não informado';
-    const pct = (qtd / maxCondicao * 100);
-    const cor = key==='a_vista'?'var(--verde)':(key==='financiamento_bancario'?'var(--azul-medio)':'var(--roxo)');
-    htmlCondicao += `<div class="barra-container"><div class="barra-label"><span>${label}</span><span>${qtd} vendas</span></div><div class="barra-fundo"><div class="barra-preenchimento" style="width:${pct}%;background:${cor};"></div></div></div>`;
-  });
-  document.getElementById('vendas-por-condicao').innerHTML = htmlCondicao || '<p style="color:#999;text-align:center;">Nenhuma venda no período</p>';
-
-  // Evolução últimos 6 meses
-  const hoje = new Date();
-  const meses = [];
-  for(let i=5;i>=0;i--){
-    const d = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
-    meses.push({mes: d.getMonth(), ano: d.getFullYear(), label: d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})});
-  }
-
-  const vendasPorMes = {};
-  meses.forEach(m => vendasPorMes[`${m.ano}-${m.mes}`] = 0);
-  vendas.forEach(u => {
-    if(u.data){
-      const d = new Date(u.data + 'T00:00:00');
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      if(vendasPorMes[key] !== undefined) vendasPorMes[key]++;
-    }
-  });
-
-  const maxMes = Math.max(...Object.values(vendasPorMes), 1);
-  let htmlEvolucao = '';
-  meses.forEach(m => {
-    const qtd = vendasPorMes[`${m.ano}-${m.mes}`] || 0;
-    const pct = (qtd / maxMes * 100);
-    htmlEvolucao += `<div class="barra-container"><div class="barra-label"><span>${m.label}</span><span>${qtd}</span></div><div class="barra-fundo"><div class="barra-preenchimento" style="width:${pct}%;background:var(--vermelho);"></div></div></div>`;
-  });
-  document.getElementById('evolucao-vendas').innerHTML = htmlEvolucao;
-
-  // Últimas Movimentações
-  const movimentacoes = Object.values(unidades)
-    .filter(u => u.data && u.status !== 'disponivel')
-    .sort((a,b) => (b.data || '').localeCompare(a.data || ''))
-    .slice(0, 10);
-
-  let htmlMov = '';
-  movimentacoes.forEach(u => {
-    const badgeClass = u.status==='vendida'?'badge-vendida':(u.status==='reservada'?'badge-reservada':'badge-permuta');
-    htmlMov += `<tr><td>${formatarDataBR(u.data)}</td><td><strong>${u.id}</strong></td><td><span class="badge ${badgeClass}">${STATUS_LABELS[u.status]}</span></td><td>${u.comprador || '-'}</td><td>${u.corretor || '-'}</td><td>${formatarMoeda(u.valor || 0)}</td></tr>`;
-  });
-  document.querySelector('#ultimas-movimentacoes tbody').innerHTML = htmlMov || '<tr><td colspan="6" style="text-align:center;color:#999;">Nenhuma movimentação registrada</td></tr>';
 }
 
 function limparFiltrosDash(){
@@ -760,306 +687,283 @@ function limparFiltrosDash(){
   atualizarDashboard();
 }
 
-function formatarDataBR(data){
-  if(!data) return '-';
-  const [ano, mes, dia] = data.split('-');
-  return `${dia}/${mes}/${ano}`;
+function atualizarDashboard(){
+  const lista = filtrarUnidadesDash();
+  const vendidas = lista.filter(u=>u.status==='vendida');
+  const reservadas = lista.filter(u=>u.status==='reservada');
+
+  const vgvPeriodo = vendidas.reduce((s,u)=>s+(Number(u.valor)||0),0);
+  const ticketMedio = vendidas.length>0 ? vgvPeriodo/vendidas.length : 0;
+  const assinadosCount = [...vendidas, ...reservadas].filter(u=>u.assinado==='sim').length;
+  const taxaAssinatura = (vendidas.length+reservadas.length)>0 ? (assinadosCount/(vendidas.length+reservadas.length))*100 : 0;
+  const valorM2Medio = vendidas.length>0 ? vendidas.reduce((s,u)=> s+(u.area>0 ? (Number(u.valor)||0)/u.area : 0),0)/vendidas.length : 0;
+
+  document.getElementById('dash-vendas-periodo').textContent = vendidas.length;
+  document.getElementById('dash-vgv-periodo').textContent = formatarMoeda(vgvPeriodo);
+  document.getElementById('dash-ticket-medio').textContent = formatarMoeda(ticketMedio);
+  document.getElementById('dash-reservas').textContent = reservadas.length;
+  document.getElementById('dash-taxa-assinatura').textContent = taxaAssinatura.toFixed(1)+'%';
+  document.getElementById('dash-valor-m2-medio').textContent = formatarMoeda(valorM2Medio);
+
+  const corretoresMap = {};
+  vendidas.forEach(u=>{
+    if(!u.corretor) return;
+    corretoresMap[u.corretor] = (corretoresMap[u.corretor]||0) + (Number(u.valor)||0);
+  });
+  const topCorretores = Object.entries(corretoresMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-corretores').innerHTML = topCorretores.length ? topCorretores.map(([nome,valor],i)=>
+    `<div class="ranking-item"><span>${i+1}. ${nome}</span><strong>${formatarMoeda(valor)}</strong></div>`
+  ).join('') : '<p class="sem-dados">Sem dados no período</p>';
+
+  const empresasMap = {};
+  vendidas.forEach(u=>{
+    if(!u.empresa) return;
+    empresasMap[u.empresa] = (empresasMap[u.empresa]||0) + (Number(u.valor)||0);
+  });
+  const topEmpresas = Object.entries(empresasMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-empresas').innerHTML = topEmpresas.length ? topEmpresas.map(([nome,valor],i)=>
+    `<div class="ranking-item"><span>${i+1}. ${nome}</span><strong>${formatarMoeda(valor)}</strong></div>`
+  ).join('') : '<p class="sem-dados">Sem dados no período</p>';
+
+  const porAndar = {};
+  for(let a=1;a<=8;a++) porAndar[a]=0;
+  vendidas.forEach(u=> porAndar[u.andar]++ );
+  const maxAndar = Math.max(1, ...Object.values(porAndar));
+  document.getElementById('grafico-andar').innerHTML = Object.entries(porAndar).map(([andar,qtd])=>`
+    <div class="barra-item">
+      <span class="barra-valor">${qtd}</span>
+      <div class="barra" style="height:${(qtd/maxAndar)*100}%"></div>
+      <span class="barra-label">${andar}º</span>
+    </div>
+  `).join('');
+
+  const condicoesLabel = {a_vista:'À vista', financiamento_bancario:'Financ.', parcelado_construtora:'Parcelado'};
+  const porCondicao = {a_vista:0, financiamento_bancario:0, parcelado_construtora:0};
+  vendidas.forEach(u=>{ if(porCondicao[u.condicao]!==undefined) porCondicao[u.condicao]++; });
+  const maxCondicao = Math.max(1, ...Object.values(porCondicao));
+  document.getElementById('grafico-condicao').innerHTML = Object.entries(porCondicao).map(([cond,qtd])=>`
+    <div class="barra-item">
+      <span class="barra-valor">${qtd}</span>
+      <div class="barra" style="height:${(qtd/maxCondicao)*100}%"></div>
+      <span class="barra-label">${condicoesLabel[cond]}</span>
+    </div>
+  `).join('');
+
+  const todasVendidas = Object.values(unidadesState).filter(u=>u.status==='vendida' && u.data);
+  const hoje = new Date();
+  const meses = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
+    meses.push({ano:d.getFullYear(), mes:d.getMonth(), label:d.toLocaleDateString('pt-BR',{month:'short'})});
+  }
+  const contagemMeses = meses.map(m=>{
+    return todasVendidas.filter(u=>{
+      const dData = new Date(u.data+'T00:00:00');
+      return dData.getFullYear()===m.ano && dData.getMonth()===m.mes;
+    }).length;
+  });
+  const maxMes = Math.max(1, ...contagemMeses);
+  document.getElementById('grafico-evolucao').innerHTML = meses.map((m,i)=>`
+    <div class="barra-item">
+      <span class="barra-valor">${contagemMeses[i]}</span>
+      <div class="barra" style="height:${(contagemMeses[i]/maxMes)*100}%"></div>
+      <span class="barra-label">${m.label}</span>
+    </div>
+  `).join('');
+
+  const movimentacoes = Object.values(unidadesState)
+    .filter(u=>u.atualizadoEm)
+    .sort((a,b)=> new Date(b.atualizadoEm) - new Date(a.atualizadoEm))
+    .slice(0,10);
+  document.getElementById('tabela-movimentacoes').innerHTML = movimentacoes.length ? movimentacoes.map(u=>`
+    <tr>
+      <td>${formatarDataHora(u.atualizadoEm)}</td>
+      <td>${u.id}</td>
+      <td><span class="badge badge-${u.status}">${labelStatus(u.status)}</span></td>
+      <td>${u.comprador||'-'}</td>
+      <td>${u.corretor||'-'}</td>
+      <td>${u.valor ? formatarMoeda(u.valor) : '-'}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="sem-dados">Nenhuma movimentação registrada</td></tr>';
 }
 
-/* ===================== FORMATAÇÃO DE MOEDA ===================== */
-function onValorInput(e){
-  let digitos = e.target.value.replace(/\D/g,'');
-  if(!digitos) digitos = '0';
-  const numero = parseInt(digitos,10)/100;
-  e.target.value = numero.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  atualizarValorM2();
-}
-function getValorNumerico(input){
-  const digitos = input.value.replace(/\D/g,'');
-  return digitos ? parseInt(digitos,10)/100 : 0;
-}
+/* ===== HELPERS DE FORMATAÇÃO ===== */
 function formatarMoeda(v){
-  return (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  return (Number(v)||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
-function atualizarValorM2(){
-  const valor = getValorNumerico(document.getElementById('m-valor'));
-  const u = unidades[unidadeSelecionadaId];
-  const area = u ? u.area : 0;
-  const m2 = area>0 ? valor/area : 0;
-  document.getElementById('m-valorm2').value = formatarMoeda(m2);
-}
-
 function formatarDataHora(dataISO){
   if(!dataISO) return '';
   const d = new Date(dataISO);
-  return d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  return d.toLocaleString('pt-BR');
+}
+function formatarDataBR(data){
+  if(!data) return '-';
+  const [ano,mes,dia] = data.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+function labelStatus(s){
+  return {disponivel:'Disponível', reservada:'Reservada', vendida:'Vendida', permuta:'Permuta'}[s] || s;
+}
+function labelMotivo(m){
+  return {permuta:'Unidade de permuta', reserva_tecnica:'Reserva técnica', outro:'Outro motivo'}[m] || '';
+}
+function labelAssinatura(a){
+  return {nao:'Não assinado', pendente:'Pendente', sim:'Assinado'}[a] || a;
+}
+function labelCondicao(c){
+  return {a_vista:'À vista', financiamento_bancario:'Financiamento bancário', parcelado_construtora:'Parcelado com a construtora'}[c] || '-';
 }
 
-/* ===================== RENDER MAPA ===================== */
-function renderizarTudo(){
-  preencherSelectAndar();
-  renderizarDashboard();
-  renderizarAndares();
-}
-
-function preencherSelectAndar(){
-  const sel = document.getElementById('f-andar');
-  if(sel.options.length>1) return;
-  for(let a=1;a<=8;a++){
-    const op = document.createElement('option');
-    op.value=a; op.textContent=a+'º Andar';
-    sel.appendChild(op);
-  }
-}
-
-function renderizarDashboard(){
-  const lista = Object.values(unidades);
-  const total = lista.length;
-  const disp = lista.filter(u=>u.status==='disponivel').length;
-  const res = lista.filter(u=>u.status==='reservada').length;
-  const vend = lista.filter(u=>u.status==='vendida').length;
-  const perm = lista.filter(u=>u.status==='permuta').length;
-  const bloq = lista.filter(u=>u.bloqueado).length;
-  const vgvTotal = lista.reduce((s,u)=>s+(u.valor||0),0);
-  const vgvVendido = lista.filter(u=>u.status==='vendida').reduce((s,u)=>s+(u.valor||0),0);
-
-  document.getElementById('dashboard').innerHTML = `
-    <div class="card"><div class="num">${total}</div><div class="lbl">Total de unidades</div></div>
-    <div class="card"><div class="num">${disp}</div><div class="lbl">Disponíveis</div></div>
-    <div class="card"><div class="num">${res}</div><div class="lbl">Reservadas</div></div>
-    <div class="card"><div class="num">${vend}</div><div class="lbl">Vendidas</div></div>
-    <div class="card"><div class="num">${perm}</div><div class="lbl">Permuta</div></div>
-    <div class="card"><div class="num">${bloq}</div><div class="lbl">Bloqueadas</div></div>
-    <div class="card"><div class="num">${formatarMoeda(vgvTotal)}</div><div class="lbl">VGV Total</div></div>
-    <div class="card"><div class="num">${formatarMoeda(vgvVendido)}</div><div class="lbl">VGV Vendido</div></div>
-  `;
-}
-
-function unidadeBateComFiltros(u){
-  const busca = document.getElementById('f-busca').value.trim().toLowerCase();
-  const fAndar = document.getElementById('f-andar').value;
-  const fStatus = document.getElementById('f-status').value;
-  const fAssin = document.getElementById('f-assinatura').value;
-  const fMetro = document.getElementById('f-metragem').value;
-
-  if(fAndar && String(u.andar)!==fAndar) return false;
-  if(fStatus==='bloqueado' && !u.bloqueado) return false;
-  if(fStatus && fStatus!=='bloqueado' && u.status!==fStatus) return false;
-  if(fAssin && u.assinado!==fAssin) return false;
-  if(fMetro==='diferenciadas' && u.area<22) return false;
-  if(fMetro==='padrao' && u.area>=22) return false;
-
-  if(busca){
-    const condTxt = CONDICAO_LABELS[u.condicao] || '';
-    const campo = `${u.id} ${u.comprador||''} ${u.corretor||''} ${u.empresa||''} ${condTxt}`.toLowerCase();
-    if(!campo.includes(busca)) return false;
-  }
-  return true;
-}
-
-function renderizarAndares(){
-  const cont = document.getElementById('andares');
-  cont.innerHTML = '';
-  let totalVisiveis = 0;
-
-  for(let andar=8; andar>=1; andar--){
-    const unidadesAndar = [];
-    for(let pos=1;pos<=30;pos++){
-      unidadesAndar.push(unidades[andar*100+pos]);
-    }
-    const visiveis = unidadesAndar.filter(unidadeBateComFiltros);
-    totalVisiveis += visiveis.length;
-
-    const disp = unidadesAndar.filter(u=>u.status==='disponivel').length;
-    const res = unidadesAndar.filter(u=>u.status==='reservada').length;
-    const vend = unidadesAndar.filter(u=>u.status==='vendida').length;
-    const perm = unidadesAndar.filter(u=>u.status==='permuta').length;
-    const bloq = unidadesAndar.filter(u=>u.bloqueado).length;
-
-    const bloco = document.createElement('div');
-    bloco.className = 'andar-bloco';
-    bloco.innerHTML = `
-      <div class="andar-header" onclick="toggleAndar(${andar})">
-        <h2>${andar}º Andar</h2>
-        <div class="andar-stats">
-          <span>🟢 ${disp} disp.</span>
-          <span>🟡 ${res} res.</span>
-          <span>🔴 ${vend} vend.</span>
-          <span>🟣 ${perm} permuta</span>
-          <span>🔒 ${bloq} bloq.</span>
-        </div>
-      </div>
-      <div class="andar-grid ${andaresColapsados[andar]?'collapsed':''}" id="grid-${andar}"></div>
-    `;
-    cont.appendChild(bloco);
-
-    const grid = bloco.querySelector(`#grid-${andar}`);
-    unidadesAndar.forEach(u=>{
-      const visivel = unidadeBateComFiltros(u);
-      const div = document.createElement('div');
-      div.className = `unit ${u.status} ${u.bloqueado?'bloqueado':''} ${u.area>=22?'diferenciada':''}`;
-      if(!visivel) div.setAttribute('hidden','');
-
-      let infoAtualizador = '';
-      if(u.atualizadoPor){
-        const nomeCurto = u.atualizadoPor.split('@')[0];
-        infoAtualizador = `<div class="atualizado-por" title="Atualizado por ${u.atualizadoPor} em ${formatarDataHora(u.atualizadoEm)}">✏️ ${nomeCurto}</div>`;
-      }
-
-      div.onclick = () => abrirModal(u.id);
-      div.title = `${u.comprador?('Comprador: '+u.comprador+'\\n'):''}${u.valor?('VGV: '+formatarMoeda(u.valor)+'\\n'):''}${u.bloqueado?('Bloqueio: '+MOTIVO_LABELS[u.motivoBloqueio]):''}${u.atualizadoPor?('\\nÚltima atualização: '+u.atualizadoPor):''}`;
-      div.innerHTML = `
-        <div class="icones">${u.bloqueado?'🔒':''}${u.assinado==='sim'?'✔':(u.assinado==='pendente'?'◐':'')}${u.area>=22?'⭐':''}</div>
-        <div class="num">${u.id}</div>
-        <div class="area">${u.area.toFixed(2)}m²</div>
-        ${infoAtualizador}
-      `;
-      grid.appendChild(div);
-    });
-  }
-
-  document.getElementById('contador-resultados').textContent = `${totalVisiveis} unidade(s) encontrada(s)`;
-}
-
-function toggleAndar(andar){
-  andaresColapsados[andar] = !andaresColapsados[andar];
-  renderizarAndares();
-}
-
-function limparFiltros(){
-  document.getElementById('f-busca').value='';
-  document.getElementById('f-andar').value='';
-  document.getElementById('f-status').value='';
-  document.getElementById('f-assinatura').value='';
-  document.getElementById('f-metragem').value='';
-  renderizarAndares();
-}
-
-['f-busca','f-andar','f-status','f-assinatura','f-metragem'].forEach(id=>{
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const el = document.getElementById(id);
-    if(el){
-      el.addEventListener('input', renderizarAndares);
-      el.addEventListener('change', renderizarAndares);
-    }
-  });
-});
-
-/* ===================== MODAL ===================== */
+/* ===== MODAL ===== */
 function abrirModal(id){
-  unidadeSelecionadaId = id;
-  const u = unidades[id];
-  document.getElementById('modal-titulo').textContent = `Unidade ${u.id} — ${u.area.toFixed(2)}m²`;
-
-  const infoAuditoria = document.getElementById('info-auditoria');
-  if(u.atualizadoPor){
-    infoAuditoria.innerHTML = `👤 Última atualização por <strong>${u.atualizadoPor}</strong> em ${formatarDataHora(u.atualizadoEm)}`;
-    infoAuditoria.classList.remove('oculto');
-  } else {
-    infoAuditoria.classList.add('oculto');
-  }
-
-  document.getElementById('m-bloqueado').checked = !!u.bloqueado;
-  document.getElementById('m-motivo').value = u.motivoBloqueio || 'permuta';
-  document.getElementById('m-status').value = u.status;
-  document.getElementById('m-assinado').value = u.assinado || 'nao';
-  document.getElementById('m-comprador').value = u.comprador || '';
-  document.getElementById('m-corretor').value = u.corretor || '';
-  document.getElementById('m-empresa').value = u.empresa || '';
-  document.getElementById('m-condicao').value = u.condicao || '';
-  document.getElementById('m-valor').value = formatarMoeda(u.valor || 0);
-  document.getElementById('m-data').value = u.data || '';
-  document.getElementById('m-obs').value = u.obs || '';
+  const u = unidadesState[id];
+  unidadeAtual = id;
+  document.getElementById('modal-numero').textContent = u.id;
+  document.getElementById('modal-area').textContent = Number(u.area).toFixed(2)+'m²';
+  document.getElementById('modal-status').value = u.status;
+  document.getElementById('modal-bloqueado').checked = u.bloqueado;
+  document.getElementById('modal-motivo-bloqueio').value = u.motivoBloqueio || 'permuta';
+  document.getElementById('modal-assinado').value = u.assinado;
+  document.getElementById('modal-comprador').value = u.comprador || '';
+  document.getElementById('modal-corretor').value = u.corretor || '';
+  document.getElementById('modal-empresa').value = u.empresa || '';
+  document.getElementById('modal-condicao').value = u.condicao || '';
+  document.getElementById('modal-valor').value = u.valor ? formatarMoeda(u.valor) : '';
+  document.getElementById('modal-data').value = u.data || '';
+  document.getElementById('modal-obs').value = u.obs || '';
   toggleMotivoBloqueio();
   atualizarValorM2();
-  document.getElementById('modal-overlay').classList.remove('hidden');
+
+  const auditoriaEl = document.getElementById('info-auditoria');
+  if(u.atualizadoPor){
+    auditoriaEl.textContent = `Última atualização: ${u.atualizadoPor} em ${formatarDataHora(u.atualizadoEm)}`;
+    auditoriaEl.style.display = 'block';
+  } else {
+    auditoriaEl.style.display = 'none';
+  }
+
+  document.getElementById('modal-unidade').classList.add('ativo');
 }
 
 function toggleMotivoBloqueio(){
-  const marcado = document.getElementById('m-bloqueado').checked;
-  document.getElementById('linha-motivo').classList.toggle('oculto', !marcado);
-  document.getElementById('modal-aviso').classList.toggle('oculto', !marcado);
+  const bloqueado = document.getElementById('modal-bloqueado').checked;
+  document.getElementById('div-motivo-bloqueio').style.display = bloqueado ? 'block' : 'none';
 }
 
 function fecharModal(){
-  document.getElementById('modal-overlay').classList.add('hidden');
-  unidadeSelecionadaId = null;
+  document.getElementById('modal-unidade').classList.remove('ativo');
+  unidadeAtual = null;
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') fecharModal(); });
-document.addEventListener('DOMContentLoaded', ()=>{
-  const overlay = document.getElementById('modal-overlay');
-  if(overlay){
-    overlay.addEventListener('click', e=>{
-      if(e.target.id==='modal-overlay') fecharModal();
-    });
-  }
-});
 
 function salvarUnidade(){
-  const id = unidadeSelecionadaId;
-  const bloqueado = document.getElementById('m-bloqueado').checked;
-  const status = document.getElementById('m-status').value;
+  const u = unidadesState[unidadeAtual];
+  const status = document.getElementById('modal-status').value;
+  const bloqueado = document.getElementById('modal-bloqueado').checked;
 
-  if(bloqueado && (status==='vendida' || status==='reservada')){
-    alert('Esta unidade está bloqueada. Desmarque o bloqueio antes de marcar como Vendida ou Reservada.');
+  if(bloqueado && (status === 'vendida' || status === 'reservada')){
+    alert('Não é possível marcar como Vendida/Reservada uma unidade bloqueada. Desbloqueie primeiro.');
     return;
   }
 
-  const user = auth.currentUser;
-  const agora = new Date().toISOString();
-
-  const atualizado = {
-    id, andar: unidades[id].andar, pos: unidades[id].pos, area: unidades[id].area,
+  const dadosAtualizados = {
+    ...u,
     status,
     bloqueado,
-    motivoBloqueio: bloqueado ? document.getElementById('m-motivo').value : '',
-    assinado: document.getElementById('m-assinado').value,
-    comprador: document.getElementById('m-comprador').value.trim(),
-    corretor: document.getElementById('m-corretor').value.trim(),
-    empresa: document.getElementById('m-empresa').value.trim(),
-    condicao: document.getElementById('m-condicao').value,
-    valor: getValorNumerico(document.getElementById('m-valor')),
-    data: document.getElementById('m-data').value,
-    obs: document.getElementById('m-obs').value.trim(),
-    atualizadoPor: user ? user.email : 'desconhecido',
-    atualizadoEm: agora
+    motivoBloqueio: bloqueado ? document.getElementById('modal-motivo-bloqueio').value : '',
+    assinado: document.getElementById('modal-assinado').value,
+    comprador: document.getElementById('modal-comprador').value,
+    corretor: document.getElementById('modal-corretor').value,
+    empresa: document.getElementById('modal-empresa').value,
+    condicao: document.getElementById('modal-condicao').value,
+    valor: getValorNumerico(document.getElementById('modal-valor')),
+    data: document.getElementById('modal-data').value,
+    obs: document.getElementById('modal-obs').value,
+    atualizadoPor: auth.currentUser.email,
+    atualizadoEm: new Date().toISOString()
   };
 
-  unidades[id] = atualizado;
-  renderizarTudo();
-  document.getElementById('status-conexao').textContent = '⏳ Salvando...';
-  unidadesRef.child(id).set(atualizado)
-    .then(()=>{ document.getElementById('status-conexao').textContent = '🔄 Sincronizado'; })
-    .catch(()=>{ document.getElementById('status-conexao').textContent = '⚠ Erro ao salvar'; alert('Erro ao salvar.'); });
-
+  unidadesRef.child(unidadeAtual).set(dadosAtualizados);
   fecharModal();
 }
 
-/* ===================== EXPORTAR CSV ===================== */
-function exportarCSV(){
-  const linhas = [['Unidade','Andar','Area(m2)','Status','Bloqueado','Motivo Bloqueio','Assinatura','Comprador','Corretor','Empresa Parceira','Condicao de Compra','VGV(R$)','Data','Observacoes','Atualizado Por','Atualizado Em']];
-  Object.values(unidades).sort((a,b)=>a.id-b.id).forEach(u=>{
-    linhas.push([
-      u.id, u.andar, u.area.toFixed(2),
-      STATUS_LABELS[u.status]||u.status,
-      u.bloqueado?'Sim':'Não',
-      u.bloqueado?(MOTIVO_LABELS[u.motivoBloqueio]||''):'',
-      ASSINADO_LABELS[u.assinado]||'',
-      u.comprador||'', u.corretor||'', u.empresa||'',
-      CONDICAO_LABELS[u.condicao]||'',
-      (u.valor||0).toFixed(2).replace('.',','),
-      u.data||'', (u.obs||'').replace(/;/g,','),
-      u.atualizadoPor||'', formatarDataHora(u.atualizadoEm)||''
-    ]);
-  });
-  const csv = linhas.map(l=>l.join(';')).join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'gestao_tryp_congonhas.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+function onValorInput(e){
+  let digitos = e.target.value.replace(/\D/g,'');
+  if(digitos === ''){ e.target.value=''; atualizarValorM2(); return; }
+  let valor = Number(digitos)/100;
+  e.target.value = formatarMoeda(valor);
+  atualizarValorM2();
 }
+
+function getValorNumerico(input){
+  let texto = input.value.replace('R$','').trim();
+  texto = texto.replace(/\./g,'').replace(',','.');
+  return Number(texto) || 0;
+}
+
+function atualizarValorM2(){
+  if(!unidadeAtual) return;
+  const u = unidadesState[unidadeAtual];
+  const valor = getValorNumerico(document.getElementById('modal-valor'));
+  const valorM2 = u.area > 0 ? valor/u.area : 0;
+  document.getElementById('modal-valor-m2').value = formatarMoeda(valorM2);
+}
+
+/* ===== EXPORTAR CSV ===== */
+function exportarCSV(){
+  const lista = Object.values(unidadesState).sort((a,b)=>a.id-b.id);
+  let csv = 'Unidade;Andar;Area;Status;Bloqueado;Motivo Bloqueio;Assinatura;Comprador;Corretor;Empresa;Condicao;Valor;Valor m2;Data;Observacoes;Atualizado Por;Atualizado Em\n';
+  lista.forEach(u=>{
+    const valor = Number(u.valor)||0;
+    const valorM2 = u.area>0 ? (valor/u.area) : 0;
+    csv += [
+      u.id, u.andar, Number(u.area).toFixed(2).replace('.',','),
+      labelStatus(u.status), u.bloqueado?'Sim':'Não', labelMotivo(u.motivoBloqueio),
+      labelAssinatura(u.assinado), u.comprador||'', u.corretor||'', u.empresa||'',
+      labelCondicao(u.condicao), valor.toFixed(2).replace('.',','),
+      valorM2.toFixed(2).replace('.',','), u.data||'', (u.obs||'').replace(/;/g,','),
+      u.atualizadoPor||'', u.atualizadoEm ? formatarDataHora(u.atualizadoEm) : ''
+    ].join(';') + '\n';
+  });
+
+  const bom = '\uFEFF';
+  const blob = new Blob([bom+csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `unidades_tryp_congonhas_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+/* ===== LOGIN / LOGOUT ===== */
+function fazerLogin(){
+  const email = document.getElementById('login-email').value;
+  const senha = document.getElementById('login-senha').value;
+  const erroEl = document.getElementById('login-erro');
+  erroEl.style.display = 'none';
+
+  auth.signInWithEmailAndPassword(email, senha)
+    .catch(()=>{
+      erroEl.textContent = 'E-mail ou senha inválidos.';
+      erroEl.style.display = 'block';
+    });
+}
+
+function fazerLogout(){
+  if(confirm('Deseja realmente sair?')){
+    auth.signOut();
+  }
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('conteudo-principal').style.display = 'block';
+    document.getElementById('usuario-logado').textContent = user.email;
+    carregarDados();
+  } else {
+    document.getElementById('tela-login').style.display = 'flex';
+    document.getElementById('conteudo-principal').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
