@@ -118,7 +118,7 @@
             <span class="legenda-item"><i class="cor-box vend"></i> Vendida</span>
             <span class="legenda-item"><i class="cor-box perm"></i> Permuta</span>
             <span class="legenda-item"><i class="cor-box bloq"></i> Bloqueada</span>
-            <span class="legenda-item"><i class="cor-box dif"></i> Planta Diferenciada (Finais 09, 10, 20, 21, 27, 28)</span>
+            <span class="legenda-item"><i class="cor-box dif"></i> Planta Diferenciada (Finais 01, 09, 10, 20, 21, 27, 28)</span>
           </div>
           <div id="contador-resultados" class="contador-resultados"></div>
         </div>
@@ -288,7 +288,7 @@
           </div>
           <div class="form-group">
             <label>Valor da Unidade (VGV)</label>
-            <input type="text" id="mod-valor" placeholder="R$ 0,00" oninput="mascaraMoedaInput(this)" />
+            <input type="text" inputmode="numeric" id="mod-valor" placeholder="R$ 0,00" oninput="mascaraMoedaInput(this)" />
           </div>
           <div class="form-group">
             <label>Valor por m² (Automático)</label>
@@ -431,7 +431,8 @@
       21.35, 21.28, 21.28, 21.28, 21.28, 21.28, 21.28, 21.28, 21.28, 22.00,
       22.00, 21.35, 21.28, 21.28, 21.28, 21.35, 22.97, 22.97, 21.35, 21.28
     ];
-    const POSICOES_DIFERENCIADAS = [9, 10, 20, 21, 27, 28];
+    // Adicionado o final 1 (01) como Planta Diferenciada
+    const POSICOES_DIFERENCIADAS = [1, 9, 10, 20, 21, 27, 28];
 
     const STATUS_LABEL_CURTO = {
       disponivel: 'DISPONÍVEL',
@@ -814,7 +815,7 @@
     }
 
     // =====================================================
-    // 8. MODAL DE EDIÇÃO E GRAVAÇÃO
+    // 8. MODAL DE EDIÇÃO E GRAVAÇÃO E CORREÇÃO DO CURSOR
     // =====================================================
     function abrirModal(id){
       const u = unidadesGlobais[id];
@@ -860,7 +861,11 @@
       document.getElementById('wrap-motivo-bloqueio').style.display = chk ? 'block' : 'none';
     }
 
+    // MÁSCARA DE MOEDA
     function mascaraMoedaInput(input){
+      let start = input.selectionStart;
+      let lengthAnterior = input.value.length;
+
       let limpo = input.value.replace(/\D/g, '');
       if(!limpo){
         input.value = '';
@@ -868,8 +873,13 @@
         atualizarValorM2Modal(0, u ? u.area : 1);
         return;
       }
+      
       const num = parseInt(limpo, 10) / 100;
       input.value = formatarMoeda(num);
+
+      let diff = input.value.length - lengthAnterior;
+      input.setSelectionRange(start + diff, start + diff);
+
       const u = unidadesGlobais[unidadeAtualId];
       atualizarValorM2Modal(num, u ? u.area : 1);
     }
@@ -938,7 +948,7 @@
     }
 
     // =====================================================
-    // 9. NAVEGAÇÃO DE ABAS E DASHBOARD ANALÍTICO
+    // 9. NAVEGAÇÃO DE ABAS E DASHBOARD ANALÍTICO (TICKET MÉDIO APENAS VENDIDAS)
     // =====================================================
     function trocarAba(aba){
       const user = auth.currentUser;
@@ -1003,32 +1013,42 @@
         return true;
       });
 
-      const qtd = filtradas.length;
+      // Quantidade exibida no primeiro card de resumo (com base no filtro)
+      const qtdGeral = filtradas.length; 
+      
+      // VGV Geral = Soma de Tudo que estiver no Filtro Atual
       const vgvPeriodo = filtradas.reduce((acc, u) => acc + (Number(u.valor) || 0), 0);
-      const areaTotal = filtradas.reduce((acc, u) => acc + (Number(u.area) || 0), 0);
-      const ticketMedio = qtd > 0 ? vgvPeriodo / qtd : 0;
-      const valorM2Medio = areaTotal > 0 ? vgvPeriodo / areaTotal : 0;
+
+      // CÁLCULO RESTRITO AO TICKET MÉDIO (APENAS STATUS = VENDIDA E SEM BLOQUEIO)
+      const filtradasVendidas = filtradas.filter(u => u.status === 'vendida' && Number(u.valor) > 0);
+      const qtdVendida = filtradasVendidas.length;
+      
+      const vgvVendido = filtradasVendidas.reduce((acc, u) => acc + (Number(u.valor) || 0), 0);
+      const areaTotalVendida = filtradasVendidas.reduce((acc, u) => acc + (Number(u.area) || 0), 0);
+
+      const ticketMedio = qtdVendida > 0 ? vgvVendido / qtdVendida : 0;
+      const valorM2Medio = areaTotalVendida > 0 ? vgvVendido / areaTotalVendida : 0;
 
       document.getElementById('dash-metricas').innerHTML = `
         <div class="resumo-card">
           <span class="resumo-label">Unidades no Filtro</span>
-          <strong class="resumo-valor">${qtd}</strong>
-          <small class="resumo-sub">Área somada: ${formatarArea(areaTotal)}</small>
+          <strong class="resumo-valor">${qtdGeral}</strong>
+          <small class="resumo-sub">Exibindo resultados gerais</small>
         </div>
         <div class="resumo-card destaque">
           <span class="resumo-label">VGV no Período</span>
           <strong class="resumo-valor resumo-valor-money" title="${formatarMoeda(vgvPeriodo)}">${formatarMoedaCompacta(vgvPeriodo)}</strong>
-          <small class="resumo-sub">Soma das unidades filtradas</small>
+          <small class="resumo-sub">Soma das unidades no filtro</small>
         </div>
         <div class="resumo-card verde">
           <span class="resumo-label">Ticket Médio</span>
           <strong class="resumo-valor resumo-valor-money" title="${formatarMoeda(ticketMedio)}">${formatarMoedaCompacta(ticketMedio)}</strong>
-          <small class="resumo-sub">Valor médio por unidade</small>
+          <small class="resumo-sub">Apenas un. VENDIDAS</small>
         </div>
         <div class="resumo-card amarelo">
           <span class="resumo-label">R$ / m² Médio</span>
           <strong class="resumo-valor resumo-valor-money" title="${formatarMoeda(valorM2Medio)}">${formatarMoedaCompacta(valorM2Medio)}</strong>
-          <small class="resumo-sub">Média ponderada por área</small>
+          <small class="resumo-sub">Apenas un. VENDIDAS</small>
         </div>
       `;
 
@@ -1061,7 +1081,7 @@
       });
       document.getElementById('chart-condicao').innerHTML = Object.keys(mapCond).map(k => {
         const c = contCond[k] || 0;
-        const p = qtd > 0 ? Math.round((c / qtd) * 100) : 0;
+        const p = qtdGeral > 0 ? Math.round((c / qtdGeral) * 100) : 0;
         return `
           <div class="bar-row">
             <span class="bar-label">${mapCond[k]}</span>
