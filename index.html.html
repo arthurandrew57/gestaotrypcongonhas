@@ -6,7 +6,7 @@
 <title>Gestão Tryp Congonhas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="styles.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -29,6 +29,8 @@
 
 <!-- ======================= APP ======================= -->
 <div id="tela-app" style="display:none;">
+
+  <div id="erro-carregamento" style="display:none;background:#fcebeb;color:#b91c1c;padding:14px 24px;font-weight:600;font-size:0.9rem;"></div>
 
   <div class="header">
     <div class="header-esq">
@@ -398,11 +400,12 @@ const unidadesRef = db.ref('unidades');
    RESTRIÇÃO DE DASHBOARD POR USUÁRIO
 ====================================================== */
 const USUARIOS_SEM_DASHBOARD = [
-  'marcos@amplaincorporadora.com.br'  // TROCAR pelo e-mail real antes de commitar
+  'marcos@amplaincorporadora.com.br'
 ];
 function usuarioPodeVerDashboard(email){
   if(!email) return false;
-  return !USUARIOS_SEM_DASHBOARD.map(e=>e.toLowerCase()).includes(email.toLowerCase());
+  const alvo = email.toLowerCase().trim();
+  return !USUARIOS_SEM_DASHBOARD.map(e=>e.toLowerCase().trim()).includes(alvo);
 }
 
 /* ======================================================
@@ -474,8 +477,18 @@ function corrigirAreasExistentes(dados){
   }
 }
 
+function mostrarErroCarregamento(msg){
+  const el = document.getElementById('erro-carregamento');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function esconderErroCarregamento(){
+  document.getElementById('erro-carregamento').style.display = 'none';
+}
+
 function carregarDados(){
   unidadesRef.on('value', snapshot=>{
+    esconderErroCarregamento();
     const data = snapshot.val();
     if(!data){
       const padrao = gerarUnidadesPadrao();
@@ -486,6 +499,12 @@ function carregarDados(){
       preencherSelectAndarDash();
       renderizarTudo();
     }
+  }, erro=>{
+    mostrarErroCarregamento(
+      'Não foi possível carregar as unidades. Motivo: ' + erro.message +
+      ' — Peça ao administrador para verificar as regras do banco de dados (Firebase).'
+    );
+    console.error('Erro ao ler unidades do Firebase:', erro);
   });
 }
 
@@ -1387,12 +1406,15 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('tela-app').style.display = 'block';
     document.getElementById('usuario-email').textContent = user.email;
 
-    const podeVerDashboard = usuarioPodeVerDashboard(user.email);
-    document.getElementById('btn-aba-dashboard').style.display = podeVerDashboard ? 'block' : 'none';
-    if(!podeVerDashboard && abaAtual === 'dashboard'){
-      trocarAba('mapa');
+    try{
+      const podeVerDashboard = usuarioPodeVerDashboard(user.email);
+      document.getElementById('btn-aba-dashboard').style.display = podeVerDashboard ? 'block' : 'none';
+    }catch(e){
+      console.error('Erro ao checar permissão de dashboard:', e);
+      document.getElementById('btn-aba-dashboard').style.display = 'block';
     }
 
+    trocarAba('mapa');
     carregarDados();
   } else {
     document.getElementById('tela-login').style.display = 'flex';
