@@ -126,20 +126,25 @@ body {
   border: 1px solid var(--cinza-200);
 }
 
-.login-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: var(--azul-primario);
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 1.25rem;
+.login-brand {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 18px;
-  letter-spacing: 0.05em;
+  margin: 0 0 18px;
+  padding: 6px 0 2px;
 }
+
+.login-brand img {
+  height: 160px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+
+/* troca a versão da logo conforme o tema (escura no claro, clara no escuro) */
+.login-brand .logo-para-tema-escuro { display: none; }
+body.dark-mode .login-brand .logo-para-tema-claro { display: none; }
+body.dark-mode .login-brand .logo-para-tema-escuro { display: block; }
 
 .login-box h2 {
   font-size: 1.35rem;
@@ -206,17 +211,21 @@ body {
 }
 
 .brand-mark {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border-radius: 10px;
-  background: var(--azul-destaque);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
   flex-shrink: 0;
+}
+
+.brand-mark img {
+  height: 28px;
+  width: auto;
+  display: block;
 }
 
 .header h1 {
@@ -402,7 +411,7 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .filtros-bar input[type="text"] {
@@ -840,6 +849,10 @@ body.dark-mode .unidade-vgv {
   font-weight: 700;
   color: var(--cinza-900);
   margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .bar-chart {
@@ -1199,6 +1212,10 @@ body.dark-mode .unidade-vgv {
 }
 
 @media (max-width: 480px) {
+  .login-brand img {
+    height: 124px;
+  }
+
   .resumo-grid,
   .dash-metricas {
     grid-template-columns: repeat(2, 1fr);
@@ -1218,5 +1235,211 @@ body.dark-mode .unidade-vgv {
 
   .modal-footer button {
     width: 100%;
+  }
+}
+
+/* =========================================
+   ABA 3: PLANTA DO PAVIMENTO (GRADE UNIFORME)
+   ========================================= */
+.tabela-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tabela-resumo .chip-resumo {
+  background: var(--superficie);
+  border: 1px solid var(--cinza-200);
+  border-left: 4px solid var(--azul-destaque);
+  border-radius: 8px;
+  padding: 6px 11px;
+  line-height: 1.3;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cinza-700);
+  white-space: nowrap;
+}
+
+.tabela-resumo .chip-resumo strong {
+  color: var(--cinza-900);
+  font-weight: 800;
+}
+
+.tabela-hint {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--cinza-500);
+  margin-left: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.tabela-vazia {
+  text-align: center;
+  padding: 28px;
+  color: var(--cinza-500);
+  font-weight: 600;
+}
+
+
+
+
+
+.planta-wrapper {
+  overflow: auto;
+  padding: 4px 2px 2px;
+}
+
+/* fundo neutro: sem desenho, sem placa, sem imagem — só os blocos das unidades */
+.planta-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1150 / 637;
+  min-width: 900px;
+  background: #eef1f6;
+  border: 1px solid var(--cinza-200);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+
+
+/* rótulos das áreas comuns (sem medidas) */
+.planta-rotulo {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(0.42rem, 0.55vw, 0.6rem);
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.planta-rotulo.vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.16em;
+}
+
+.planta-rotulo.rot-nucleo,
+.planta-rotulo.rot-tecnica {
+  color: #9aa6b8;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.planta-rotulo.rot-terraco {
+  color: #7f8ea3;
+  font-size: clamp(0.4rem, 0.5vw, 0.55rem);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.14em;
+}
+
+/* hotspots: um por unidade, na posição medida na prancha */
+.planta-hot {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border: 2px solid;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  line-height: 1.05;
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+}
+
+.planta-hot {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+}
+
+.planta-hot:hover {
+  transform: scale(1.06);
+  z-index: 20;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.30);
+}
+
+.hot-num {
+  font-size: clamp(0.66rem, 0.95vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hot-area {
+  font-size: clamp(0.5rem, 0.66vw, 0.68rem);
+  font-weight: 700;
+  opacity: 0.92;
+  margin-top: 1px;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.55);
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.hot-id {
+  font-size: clamp(0.44rem, 0.56vw, 0.58rem);
+  font-weight: 700;
+  opacity: 0.55;
+  margin-top: 1px;
+}
+
+/* blocos muito pequenos: só o número */
+.planta-hot.compacto .hot-area,
+.planta-hot.compacto .hot-id {
+  display: none;
+}
+
+
+
+
+/* cores por situação */
+.planta-hot.status-disponivel { background: rgba(34, 197, 94, 0.62);  border-color: #15803d; color: #052e16; }
+.planta-hot.status-reservada  { background: rgba(250, 204, 21, 0.72); border-color: #b45309; color: #422006; }
+.planta-hot.status-vendida    { background: rgba(239, 68, 68, 0.62);  border-color: #b91c1c; color: #450a0a; }
+.planta-hot.status-permuta    { background: rgba(139, 92, 246, 0.62); border-color: #6d28d9; color: #2e1065; }
+.planta-hot.status-bloqueada {
+  background: repeating-linear-gradient(135deg, rgba(148,163,184,0.65), rgba(148,163,184,0.65) 5px, rgba(100,116,139,0.8) 5px, rgba(100,116,139,0.8) 10px);
+  border-color: #334155;
+  color: #0f172a;
+}
+
+.planta-hot.diferenciada {
+  box-shadow: inset 0 0 0 2px var(--dourado);
+}
+
+.planta-hot.fora-do-filtro {
+  opacity: 0.16;
+  filter: grayscale(0.5);
+}
+
+.planta-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cinza-200);
+}
+
+@media (max-width: 768px) {
+  .planta-canvas {
+    min-width: 760px;
   }
 }
